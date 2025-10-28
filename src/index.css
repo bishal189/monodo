@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --color-momondo-purple: #321A47;
+  --font-family-cera: 'CeraPro-Bold', 'Cera Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  body {
+    font-family: var(--font-family-cera);
+  }
+}
