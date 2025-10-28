@@ -1,7 +1,7 @@
 import MomondoLogo from "../components/MomondoLogo";
 import { Link } from "react-router-dom";
 
-export default function Forgot_Password() {   // spelling corrected here
+export default function Forgot_Password() {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Password Forgot Submitted");
