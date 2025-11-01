@@ -1,7 +1,11 @@
 import MomondoLogo from "../components/MomondoLogo";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+
+import {Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
+   const [showPassword, setShowPassword] = useState(false);
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Login submitted");
@@ -21,24 +25,40 @@ export default function Login() {
           <div className="space-y-4">
             <div>
               <label className="block text-purple-100 text-sm font-medium mb-2">
-                Email
+                Usename
               </label>
               <input
-                type="email"
-                placeholder="Enter your email"
+                type="text"
+                placeholder="Enter Usernamel"
                 className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
               />
             </div>
 
             <div>
               <label className="block text-purple-100 text-sm font-medium mb-2">
-                Password
+                Withdraw Password
               </label>
-              <input
-                type="password"
-                placeholder="Enter your password"
-                className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
-              />
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Lock className="h-5 w-5 text-purple-300" />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter Withdraw password"
+                  className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5 text-purple-300 hover:text-pink-400 transition" />
+                  ) : (
+                    <Eye className="h-5 w-5 text-purple-300 hover:text-pink-400 transition" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="flex items-center justify-between text-sm">
