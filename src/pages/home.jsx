@@ -223,35 +223,36 @@ export default function Home() {
     }
   };
 
-  const ListingCard = ({ listing }) => (
-    <div className="flex-shrink-0 w-[85vw] sm:w-72 md:w-80 cursor-pointer group">
-      <div className="relative mb-3 overflow-hidden rounded-lg h-48 sm:h-56 md:h-64">
-        <img
-          src={listing.image}
-          alt={listing.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <button className="absolute top-3 right-3 bg-white rounded-full p-2 hover:bg-gray-100 transition-colors">
-          <Heart size={20} className="text-gray-600" fill="white" />
-        </button>
-        <span className="absolute top-3 left-3 bg-white text-gray-800 text-xs font-semibold px-3 py-1 rounded-full">
-          Guest favorite
+const ListingCard = ({ listing }) => (
+  <div className="flex-shrink-0 w-[45vw] sm:w-64 md:w-72 cursor-pointer group bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden shadow-md hover:scale-[1.02] transition-transform duration-300">
+    <div className="relative mb-2 overflow-hidden h-40 sm:h-48 md:h-56">
+      <img
+        src={listing.image}
+        alt={listing.name}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      />
+      <button className="absolute top-3 right-3 bg-white/70 rounded-full p-2 hover:bg-white transition-colors">
+        <Heart size={18} className="text-gray-700" />
+      </button>
+      <span className="absolute top-3 left-3 bg-white/80 text-gray-800 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+        Guest favorite
+      </span>
+    </div>
+    <div className="px-3 pb-3">
+      <h3 className="font-semibold text-white truncate text-sm sm:text-base">
+        {listing.name}
+      </h3>
+      <p className="text-pink-200 text-xs sm:text-sm">{listing.price}</p>
+      <div className="flex items-center gap-1 mt-1">
+        <Star size={14} fill="#FFD700" className="text-yellow-400" />
+        <span className="text-xs sm:text-sm font-medium text-white">
+          {listing.rating}
         </span>
       </div>
-      <div className="px-1">
-        <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-base">
-          {listing.name}
-        </h3>
-        <p className="text-gray-600 text-xs sm:text-sm">{listing.price}</p>
-        <div className="flex items-center gap-1 mt-1">
-          <Star size={16} fill="#000" className="text-black" />
-          <span className="text-xs sm:text-sm font-medium">
-            {listing.rating}
-          </span>
-        </div>
-      </div>
     </div>
-  );
+  </div>
+);
+
 
   const ListingSection = ({ title, sectionKey, items }) => (
     <div className="px-4 sm:px-8 py-6 sm:py-8 border-b border-white/20">
