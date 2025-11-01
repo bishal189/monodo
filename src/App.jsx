@@ -3,6 +3,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/home";
 
+import Forgot_Password from "./pages/Forgot_Password";
+
 export default function App() {
   return (
     <Router>
@@ -11,6 +13,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/home" element={<Home />} />
+        <Route path="/forgot-password" element={<Forgot_Password />} />
       </Routes>
     </Router>
   );

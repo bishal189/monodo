@@ -49,8 +49,13 @@ export default function Login() {
                 />
                 Remember me
               </label>
-              <button className="text-pink-400 hover:text-pink-300 transition">
-                Forgot password?
+               <button className="text-pink-400 hover:text-pink-300 transition">
+                <Link
+              to="/forgot-password"
+              className="text-pink-400 hover:text-pink-300 transition font-semibold"
+            >
+              Forgot password?
+            </Link>
               </button>
             </div>
 
