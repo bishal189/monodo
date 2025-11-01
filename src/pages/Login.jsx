@@ -36,7 +36,7 @@ export default function Login() {
 
             <div>
               <label className="block text-purple-100 text-sm font-medium mb-2">
-                Withdraw Password
+                Password
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -44,7 +44,7 @@ export default function Login() {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter Withdraw password"
+                  placeholder="Enter password"
                   className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
                 />
                 <button
