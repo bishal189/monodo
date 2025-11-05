@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,205 +13,25 @@ import {
 import MomondoLogo from "../components/MomondoLogo";
 
 export default function Home() {
+  const [listings, setListings] = useState({
+    Kathmandu: [],
+    Pokhara: [],
+    Tokyo: [],
+  });
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const listings = {
-    kathmandu: [
-      {
-        id: 1,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Kathmandu",
-        price: "$26 for 2 nights",
-        rating: 4.95,
-        reviews: 128,
-      },
-      {
-        id: 2,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Room in Lalitpur",
-        price: "$64 for 2 nights",
-        rating: 4.99,
-        reviews: 214,
-      },
-      {
-        id: 3,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Room in Lalitpur",
-        price: "$28 for 2 nights",
-        rating: 4.96,
-        reviews: 189,
-      },
-      {
-        id: 4,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Kathmandu",
-        price: "$156 for 2 nights",
-        rating: 4.96,
-        reviews: 245,
-      },
-      {
-        id: 5,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Kathmandu",
-        price: "$71 for 2 nights",
-        rating: 4.81,
-        reviews: 167,
-      },
-      {
-        id: 6,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Kathmandu",
-        price: "$89 for 2 nights",
-        rating: 4.97,
-        reviews: 298,
-      },
-      {
-        id: 7,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Lalitpur",
-        price: "$80 for 2 nights",
-        rating: 4.97,
-        reviews: 156,
-      },
-    ],
-    seoul: [
-      {
-        id: 8,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Room in Jongno-gu",
-        price: "$168 for 2 nights",
-        rating: 4.94,
-        reviews: 342,
-      },
-      {
-        id: 9,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Room in Dongjak-gu",
-        price: "$166 for 2 nights",
-        rating: 4.95,
-        reviews: 428,
-      },
-      {
-        id: 10,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Home in Seoul",
-        price: "$140 for 2 nights",
-        rating: 5.0,
-        reviews: 612,
-      },
-      {
-        id: 11,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Room in Mapo-gu",
-        price: "$81 for 2 nights",
-        rating: 4.87,
-        reviews: 298,
-      },
-      {
-        id: 12,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Room in Seoul",
-        price: "$253 for 2 nights",
-        rating: 4.99,
-        reviews: 567,
-      },
-      {
-        id: 13,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Hotel in Seoul",
-        price: "$765 for 2 nights",
-        rating: 5.0,
-        reviews: 890,
-      },
-      {
-        id: 14,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Apartment in Seoul",
-        price: "$380 for 2 nights",
-        rating: 4.97,
-        reviews: 734,
-      },
-    ],
-    tokyo: [
-      {
-        id: 15,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Apartment in Shibuya",
-        price: "$156 for 2 nights",
-        rating: 4.98,
-        reviews: 567,
-      },
-      {
-        id: 16,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Room in Asakusa",
-        price: "$98 for 2 nights",
-        rating: 4.92,
-        reviews: 423,
-      },
-      {
-        id: 17,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Condo in Shinjuku",
-        price: "$203 for 2 nights",
-        rating: 4.99,
-        reviews: 678,
-      },
-      {
-        id: 18,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Apartment in Minato",
-        price: "$145 for 2 nights",
-        rating: 4.96,
-        reviews: 534,
-      },
-      {
-        id: 19,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Room in Harajuku",
-        price: "$76 for 2 nights",
-        rating: 4.88,
-        reviews: 301,
-      },
-      {
-        id: 20,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Penthouse in Tokyo",
-        price: "$456 for 2 nights",
-        rating: 5.0,
-        reviews: 892,
-      },
-      {
-        id: 21,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Traditional Stay in Tokyo",
-        price: "$234 for 2 nights",
-        rating: 4.97,
-        reviews: 612,
-      },
-    ],
-  };
+  useEffect(() => {
+    fetch("http://localhost:8000/api/home/")
+      .then((res) => res.json())
+      .then((data) => {
+        setListings({
+          Kathmandu: data.Kathmandu || [],
+          Pokhara: data.Pokhara || [],
+          Tokyo: data.Tokyo || [],
+        });
+      })
+      .catch((err) => console.error("Error fetching data:", err));
+  }, []);
 
   const scroll = (section, direction) => {
     const container = document.getElementById(`scroll-${section}`);
@@ -223,36 +43,40 @@ export default function Home() {
     }
   };
 
-const ListingCard = ({ listing }) => (
-  <div className="flex-shrink-0 w-[45vw] sm:w-64 md:w-72 cursor-pointer group bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden shadow-md hover:scale-[1.02] transition-transform duration-300">
-    <div className="relative mb-2 overflow-hidden h-40 sm:h-48 md:h-56">
-      <img
-        src={listing.image}
-        alt={listing.name}
-        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-      />
-      <button className="absolute top-3 right-3 bg-white/70 rounded-full p-2 hover:bg-white transition-colors">
-        <Heart size={18} className="text-gray-700" />
-      </button>
-      <span className="absolute top-3 left-3 bg-white/80 text-gray-800 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-        Guest favorite
-      </span>
-    </div>
-    <div className="px-3 pb-3">
-      <h3 className="font-semibold text-white truncate text-sm sm:text-base">
-        {listing.name}
-      </h3>
-      <p className="text-pink-200 text-xs sm:text-sm">{listing.price}</p>
-      <div className="flex items-center gap-1 mt-1">
-        <Star size={14} fill="#FFD700" className="text-yellow-400" />
-        <span className="text-xs sm:text-sm font-medium text-white">
-          {listing.rating}
+  const ListingCard = ({ listing }) => (
+    <div className="flex-shrink-0 w-[45vw] sm:w-64 md:w-72 cursor-pointer group bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden shadow-md hover:scale-[1.02] transition-transform duration-300">
+      <div className="relative mb-2 overflow-hidden h-40 sm:h-48 md:h-56">
+        <img
+          src={listing.image}
+          alt={listing.location}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+        <button className="absolute top-3 right-3 bg-white/70 rounded-full p-2 hover:bg-white transition-colors">
+          <Heart size={18} className="text-gray-700" />
+        </button>
+        <span className="absolute top-3 left-3 bg-white/80 text-gray-800 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+          Guest favorite
         </span>
       </div>
+      <div className="px-3 pb-3">
+        <h3 className="font-semibold text-white truncate text-sm sm:text-base">
+          {listing.location}
+        </h3>
+        <p className="text-pink-200 text-xs sm:text-sm">
+          ${listing.price} for 2 nights
+        </p>
+        <div className="flex items-center gap-1 mt-1">
+          <Star size={14} fill="#FFD700" className="text-yellow-400" />
+          <span className="text-xs sm:text-sm font-medium text-white">
+            {listing.rating}
+          </span>
+          <span className="text-xs text-gray-300">
+            ({listing.reviews})
+          </span>
+        </div>
+      </div>
     </div>
-  </div>
-);
-
+  );
 
   const ListingSection = ({ title, sectionKey, items }) => (
     <div className="px-4 sm:px-8 py-6 sm:py-8 border-b border-white/20">
@@ -261,22 +85,21 @@ const ListingCard = ({ listing }) => (
           {title} <span className="text-gray-300">›</span>
         </h2>
         <div className="flex gap-2">
-  <button
-    onClick={() => scroll(sectionKey, "left")}
-    className="p-1.5 sm:p-2 rounded-full border border-white/30 text-white bg-transparent hover:bg-white/20 transition-all"
-    aria-label="Scroll left"
-  >
-    <ChevronLeft size={18} className="sm:w-5 sm:h-5" />
-  </button>
-  <button
-    onClick={() => scroll(sectionKey, "right")}
-    className="p-1.5 sm:p-2 rounded-full border border-white/30 text-white bg-transparent hover:bg-white/20 transition-all"
-    aria-label="Scroll right"
-  >
-    <ChevronRight size={18} className="sm:w-5 sm:h-5" />
-  </button>
-</div>
-
+          <button
+            onClick={() => scroll(sectionKey, "left")}
+            className="p-1.5 sm:p-2 rounded-full border border-white/30 text-white bg-transparent hover:bg-white/20 transition-all"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={18} className="sm:w-5 sm:h-5" />
+          </button>
+          <button
+            onClick={() => scroll(sectionKey, "right")}
+            className="p-1.5 sm:p-2 rounded-full border border-white/30 text-white bg-transparent hover:bg-white/20 transition-all"
+            aria-label="Scroll right"
+          >
+            <ChevronRight size={18} className="sm:w-5 sm:h-5" />
+          </button>
+        </div>
       </div>
       <div
         id={`scroll-${sectionKey}`}
@@ -326,7 +149,6 @@ const ListingCard = ({ listing }) => (
             <button className="p-2 hover:bg-pink-700 rounded-full transition-colors text-white">
               <Globe size={20} />
             </button>
-            {/* Hamburger mobile */}
             <button
               className="p-2 hover:bg-pink-700 rounded-full transition-colors md:hidden text-white"
               onClick={() => setMenuOpen(true)}
@@ -376,19 +198,19 @@ const ListingCard = ({ listing }) => (
       {/* Main Content */}
       <main className="pb-12">
         <ListingSection
-          title="Popular homes in Kathmandu"
-          sectionKey="kathmandu"
-          items={listings.kathmandu}
+          title="Kathmandu"
+          sectionKey="Kathmandu"
+          items={listings.Kathmandu}
         />
         <ListingSection
-          title="Available next month in Seoul"
-          sectionKey="seoul"
-          items={listings.seoul}
+          title="Pokhara"
+          sectionKey="Pokhara"
+          items={listings.Pokhara}
         />
         <ListingSection
-          title="Stay in Tokyo"
-          sectionKey="tokyo"
-          items={listings.tokyo}
+          title="Tokyo"
+          sectionKey="Tokyo"
+          items={listings.Tokyo}
         />
       </main>
 
