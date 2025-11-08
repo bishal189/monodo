@@ -21,7 +21,7 @@ export default function Home() {
         id: 1,
         image:
           "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Kathmandu",
+        name: "Apartments in Kathmandu",
         price: "$26 for 2 nights",
         rating: 4.95,
         reviews: 128,
