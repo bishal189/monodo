@@ -1,30 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
   Heart,
   Star,
-  Globe,
-  Menu,
-  X,
 } from "lucide-react";
-import { toast } from "react-toastify";
-import MomondoLogo from "../components/MomondoLogo";
-import { clearAuthStorage } from "../services/apiClient";
+import PrimaryNav from "../components/PrimaryNav";
 
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
-
-  const handleLogout = () => {
-    clearAuthStorage();
-    toast.success("Logged out.");
-    navigate("/login");
-  };
-
   const listings = {
     kathmandu: [
       {
@@ -306,97 +290,7 @@ const ListingCard = ({ listing }) => (
 
   return (
     <div className="bg-momondo-purple w-full min-h-full text-white">
-      {/* Header */}
-      <header className="border-b border-white/20 sticky top-0 bg-momondo-purple z-50">
-        <div className="px-8 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-12">
-            <MomondoLogo />
-            <nav className="hidden md:flex items-center gap-6 sm:gap-8">
-              <button className="flex items-center gap-2 text-white hover:text-pink-300 text-sm font-medium transition-colors">
-                🏠 Homes
-              </button>
-              <button className="flex items-center gap-2 text-white hover:text-pink-300 text-sm font-medium transition-colors">
-                🎈 Experiences
-                <span className="bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">
-                  NEW
-                </span>
-              </button>
-              <button className="flex items-center gap-2 text-white hover:text-pink-300 text-sm font-medium transition-colors">
-                🔒 Services
-                <span className="bg-pink-500 text-white text-xs px-2 py-0.5 rounded-full ml-1">
-                  NEW
-                </span>
-              </button>
-            </nav>
-          </div>
-          <div className="flex items-center gap-3 sm:gap-6">
-            <button className="hidden md:block text-sm font-medium hover:bg-pink-700 px-4 py-2 rounded-lg transition-colors text-white">
-              Become a host
-            </button>
-            <button
-              onClick={handleLogout}
-              className="hidden md:block text-sm font-medium bg-white/10 hover:bg-pink-600 px-4 py-2 rounded-lg transition-colors text-white border border-white/20"
-            >
-              Logout
-            </button>
-            <button className="p-2 hover:bg-pink-700 rounded-full transition-colors text-white">
-              <Globe size={20} />
-            </button>
-            {/* Hamburger mobile */}
-            <button
-              className="p-2 hover:bg-pink-700 rounded-full transition-colors md:hidden text-white"
-              onClick={() => setMenuOpen(true)}
-            >
-              <Menu size={20} />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Slide-in Menu */}
-      <div
-        className={`fixed top-0 right-0 h-full w-64 bg-momondo-purple shadow-lg transform transition-transform duration-300 z-50 ${
-          menuOpen ? "translate-x-0" : "translate-x-full"
-        }`}
-      >
-        <div className="flex justify-end p-4">
-          <button
-            className="p-2 hover:bg-pink-700 rounded-full text-white"
-            onClick={() => setMenuOpen(false)}
-          >
-            <X size={20} />
-          </button>
-        </div>
-        <nav className="flex flex-col gap-4 px-6 mt-4">
-          <button
-            className="text-left hover:text-pink-300"
-            onClick={() => setMenuOpen(false)}
-          >
-            🏠 Homes
-          </button>
-          <button
-            className="text-left hover:text-pink-300"
-            onClick={() => setMenuOpen(false)}
-          >
-            🎈 Experiences
-          </button>
-          <button
-            className="text-left hover:text-pink-300"
-            onClick={() => setMenuOpen(false)}
-          >
-            🔒 Services
-          </button>
-          <button
-            className="text-left hover:text-pink-300"
-            onClick={() => {
-              setMenuOpen(false);
-              handleLogout();
-            }}
-          >
-            🚪 Logout
-          </button>
-        </nav>
-      </div>
+      <PrimaryNav />
 
       {/* Main Content */}
       <main className="pb-12">

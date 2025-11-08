@@ -43,6 +43,13 @@ export const storeUser = (user) => {
   localStorage.setItem("user", JSON.stringify(user));
 };
 
+export const getStoredUser = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+  return safeJsonParse(localStorage.getItem("user"));
+};
+
 export const isAuthenticated = () => {
   const tokens = getStoredTokens();
   return Boolean(tokens?.access);
