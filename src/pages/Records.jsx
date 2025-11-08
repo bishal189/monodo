@@ -272,10 +272,10 @@ export default function Records() {
                             key={review.id}
                             type="button"
                             onClick={() => setSelectedReviewId(review.id)}
-                            className={`w-full text-left text-sm rounded-xl px-4 py-3 transition border ${
+                            className={`w-full text-left text-sm rounded-xl px-4 py-3 transition ${
                               isSelected
-                                ? "bg-pink-50 border-pink-300 text-pink-700 shadow-sm"
-                                : "bg-[#F9FAFB] border-[#E5E7EB] text-[#374151] hover:bg-[#F3F4F6]"
+                                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white border border-transparent shadow-lg shadow-pink-500/30"
+                                : "bg-[#F9FAFB] border border-[#E5E7EB] text-[#374151] hover:bg-[#F3F4F6]"
                             }`}
                           >
                           {review.review_text}
