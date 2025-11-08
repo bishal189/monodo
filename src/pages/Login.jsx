@@ -1,14 +1,59 @@
-import MomondoLogo from "../components/MomondoLogo";
-import { Link } from "react-router-dom";
 import { useState } from "react";
-
-import {Lock, Eye, EyeOff } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { Lock, Eye, EyeOff } from "lucide-react";
+import MomondoLogo from "../components/MomondoLogo";
+import apiClient, { storeTokens, storeUser } from "../services/apiClient";
 
 export default function Login() {
-   const [showPassword, setShowPassword] = useState(false);
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Login submitted");
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    username: "",
+    login_password: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      const { data } = await apiClient.post("/login/", formData);
+
+      toast.success(data?.message ?? "Login successful!");
+
+      if (data?.tokens) {
+        storeTokens(data.tokens);
+      }
+
+      if (data?.user) {
+        storeUser(data.user);
+      }
+
+      setFormData({
+        username: "",
+        login_password: "",
+      });
+
+      setTimeout(() => navigate("/home"), 800);
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.detail ||
+        "Unable to login. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -22,15 +67,19 @@ export default function Login() {
           <h2 className="text-3xl font-bold text-white mb-2">Welcome back</h2>
           <p className="text-purple-200 mb-6">Sign in to your account</p>
 
-          <div className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="block text-purple-100 text-sm font-medium mb-2">
-                Usename
+                Username
               </label>
               <input
                 type="text"
-                placeholder="Enter Usernamel"
+                name="username"
+                value={formData.username}
+                onChange={handleChange}
+                placeholder="Enter Username"
                 className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                required
               />
             </div>
 
@@ -44,8 +93,12 @@ export default function Login() {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
+                  name="login_password"
+                  value={formData.login_password}
+                  onChange={handleChange}
                   placeholder="Enter password"
                   className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  required
                 />
                 <button
                   type="button"
@@ -69,24 +122,22 @@ export default function Login() {
                 />
                 Remember me
               </label>
-               <button className="text-pink-400 hover:text-pink-300 transition">
-                <Link
-              to="/forgot-password"
-              className="text-pink-400 hover:text-pink-300 transition font-semibold"
-            >
-              Forgot password?
-            </Link>
-              </button>
+              <Link
+                to="/forgot-password"
+                className="text-pink-400 hover:text-pink-300 transition font-semibold"
+              >
+                Forgot password?
+              </Link>
             </div>
 
             <button
-              onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold py-3 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg"
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg"
             >
-              Sign In
+              {isSubmitting ? "Signing In..." : "Sign In"}
             </button>
-          </div>
-
+          </form>
 
           <p className="text-center text-purple-200 text-sm mt-6">
             Don't have an account?{" "}

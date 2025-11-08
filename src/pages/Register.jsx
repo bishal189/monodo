@@ -1,17 +1,83 @@
-import MomondoLogo from "../components/MomondoLogo";
-import { Link } from "react-router-dom";
 import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 import { User, Phone, Lock, Eye, EyeOff, Gift } from "lucide-react";
+import MomondoLogo from "../components/MomondoLogo";
+import apiClient, { storeTokens, storeUser } from "../services/apiClient";
 
 export default function Register() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    username: "",
+    phone_number: "",
+    withdraw_password: "",
+    confirm_withdraw_password: "",
+    login_password: "",
+    confirm_login_password: "",
+    invitation_code: "",
+  });
   const [showWithdrawPassword, setShowWithdrawPassword] = useState(false);
   const [showConfirmWithdrawPassword, setShowConfirmWithdrawPassword] = useState(false);
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showConfirmLoginPassword, setShowConfirmLoginPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Register submitted");
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    if (formData.withdraw_password !== formData.confirm_withdraw_password) {
+      toast.error("Withdraw passwords do not match.");
+      return;
+    }
+
+    if (formData.login_password !== formData.confirm_login_password) {
+      toast.error("Login passwords do not match.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const { data } = await apiClient.post("/register/", formData);
+
+      toast.success(data?.message ?? "Registration successful!");
+
+      if (data?.tokens) {
+        storeTokens(data.tokens);
+      }
+
+      if (data?.user) {
+        storeUser(data.user);
+      }
+
+      setFormData({
+        username: "",
+        phone_number: "",
+        withdraw_password: "",
+        confirm_withdraw_password: "",
+        login_password: "",
+        confirm_login_password: "",
+        invitation_code: "",
+      });
+
+      setTimeout(() => navigate("/login"), 1200);
+    } catch (error) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data?.detail ||
+        "Unable to register. Please try again.";
+      toast.error(errorMessage);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -25,7 +91,7 @@ export default function Register() {
           <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
           <p className="text-purple-200 mb-6">Join us and start your journey</p>
 
-          <div className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Username Field */}
             <div>
               <label className="block text-purple-100 text-sm font-medium mb-2">
@@ -37,8 +103,12 @@ export default function Register() {
                 </div>
                 <input
                   type="text"
+                  name="username"
+                  value={formData.username}
+                  onChange={handleChange}
                   placeholder="Enter Username"
                   className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  required
                 />
               </div>
             </div>
@@ -53,9 +123,13 @@ export default function Register() {
                   <Phone className="h-5 w-5 text-purple-300" />
                 </div>
                 <input
-                  type="text"
+                  type="tel"
+                  name="phone_number"
+                  value={formData.phone_number}
+                  onChange={handleChange}
                   placeholder="Enter Phone Number"
                   className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  required
                 />
               </div>
             </div>
@@ -71,8 +145,12 @@ export default function Register() {
                 </div>
                 <input
                   type={showWithdrawPassword ? "text" : "password"}
+                  name="withdraw_password"
+                  value={formData.withdraw_password}
+                  onChange={handleChange}
                   placeholder="Enter Withdraw password"
                   className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  required
                 />
                 <button
                   type="button"
@@ -99,8 +177,12 @@ export default function Register() {
                 </div>
                 <input
                   type={showConfirmWithdrawPassword ? "text" : "password"}
+                  name="confirm_withdraw_password"
+                  value={formData.confirm_withdraw_password}
+                  onChange={handleChange}
                   placeholder="Confirm Withdraw password"
                   className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  required
                 />
                 <button
                   type="button"
@@ -127,8 +209,12 @@ export default function Register() {
                 </div>
                 <input
                   type={showLoginPassword ? "text" : "password"}
+                  name="login_password"
+                  value={formData.login_password}
+                  onChange={handleChange}
                   placeholder="Enter Login password"
                   className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  required
                 />
                 <button
                   type="button"
@@ -155,8 +241,12 @@ export default function Register() {
                 </div>
                 <input
                   type={showConfirmLoginPassword ? "text" : "password"}
+                  name="confirm_login_password"
+                  value={formData.confirm_login_password}
+                  onChange={handleChange}
                   placeholder="Confirm Login password"
                   className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  required
                 />
                 <button
                   type="button"
@@ -183,6 +273,9 @@ export default function Register() {
                 </div>
                 <input
                   type="text"
+                  name="invitation_code"
+                  value={formData.invitation_code}
+                  onChange={handleChange}
                   placeholder="Enter Invitation code"
                   className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
                 />
@@ -190,12 +283,13 @@ export default function Register() {
             </div>
 
             <button
-              onClick={handleSubmit}
-              className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold py-3 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg"
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 disabled:opacity-70 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-all transform hover:scale-105 shadow-lg"
             >
-              Create Account
+              {isSubmitting ? "Creating Account..." : "Create Account"}
             </button>
-          </div>
+          </form>
 
           <p className="text-center text-purple-200 text-sm mt-6">
             Already have an account?{" "}

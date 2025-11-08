@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,10 +11,19 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { toast } from "react-toastify";
 import MomondoLogo from "../components/MomondoLogo";
+import { clearAuthStorage } from "../services/apiClient";
 
 export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    clearAuthStorage();
+    toast.success("Logged out.");
+    navigate("/login");
+  };
 
   const listings = {
     kathmandu: [
@@ -323,6 +333,12 @@ const ListingCard = ({ listing }) => (
             <button className="hidden md:block text-sm font-medium hover:bg-pink-700 px-4 py-2 rounded-lg transition-colors text-white">
               Become a host
             </button>
+            <button
+              onClick={handleLogout}
+              className="hidden md:block text-sm font-medium bg-white/10 hover:bg-pink-600 px-4 py-2 rounded-lg transition-colors text-white border border-white/20"
+            >
+              Logout
+            </button>
             <button className="p-2 hover:bg-pink-700 rounded-full transition-colors text-white">
               <Globe size={20} />
             </button>
@@ -369,6 +385,15 @@ const ListingCard = ({ listing }) => (
             onClick={() => setMenuOpen(false)}
           >
             🔒 Services
+          </button>
+          <button
+            className="text-left hover:text-pink-300"
+            onClick={() => {
+              setMenuOpen(false);
+              handleLogout();
+            }}
+          >
+            🚪 Logout
           </button>
         </nav>
       </div>
