@@ -29,7 +29,7 @@ export default function Login() {
               </label>
               <input
                 type="text"
-                placeholder="Enter Usernamel"
+                placeholder="Enter Username"
                 className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
               />
             </div>
