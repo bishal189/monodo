@@ -82,6 +82,7 @@ export default function Login() {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
+
                 placeholder="Enter Username"
                 className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
                 required
