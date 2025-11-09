@@ -4,6 +4,7 @@ import Register from "./pages/Register";
 import Home from "./pages/home";
 import Forgot_Password from "./pages/Forgot_Password";
 import Records from "./pages/Records";
+import GetStarted from "./pages/GetStarted";
 import Faq from "./pages/Faq";
 import Invite from "./pages/Invite";
 import About from "./pages/About";
@@ -65,6 +66,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Support />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/get-started"
+            element={
+              <ProtectedRoute>
+                <GetStarted />
               </ProtectedRoute>
             }
           />

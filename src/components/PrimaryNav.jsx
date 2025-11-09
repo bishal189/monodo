@@ -12,6 +12,7 @@ const navItems = [
   { path: "/support", label: "Support", icon: "💬" },
   { path: "/faq", label: "FAQ", icon: "❓" },
   { path: "/about", label: "About", icon: "ℹ️" },
+  { path: "/get-started", label: "Get Started", icon: "🚀" },
 ];
 
 export default function PrimaryNav() {
