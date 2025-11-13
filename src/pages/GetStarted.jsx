@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import { toast } from "react-toastify";
 import PrimaryNav from "../components/PrimaryNav";
 import apiClient from "../services/apiClient";
 
@@ -40,6 +41,41 @@ const formatTimestamp = (value) => {
     dateStyle: "medium",
     timeStyle: "short",
   });
+};
+
+const normalizeRecord = (record) => {
+  const statusKey = record.status?.toLowerCase() ?? "pending";
+  const priceNumeric = Number(record.price ?? 0);
+  const commissionNumeric = Number(record.commission ?? 0);
+  const totalValueNumeric = Number(record.total_value ?? record.totalValue ?? priceNumeric + commissionNumeric);
+  const timestampSource = record.updated_at ?? record.created_at ?? null;
+
+  return {
+    ...record,
+    statusKey,
+    priceNumeric,
+    commissionNumeric,
+    totalValueNumeric,
+    priceDisplay: formatCurrency(priceNumeric),
+    commissionDisplay: formatCurrency(commissionNumeric),
+    totalValueDisplay: formatCurrency(totalValueNumeric),
+    imageUrl: record.image_url || record.imageUrl,
+    timestampDisplay: formatTimestamp(timestampSource),
+  };
+};
+
+const computeSummary = (records, userBalance = 0) => {
+  const completedRecords = records.filter((item) => item.statusKey === "completed");
+  const totalBalance = completedRecords.reduce((acc, item) => acc + Number(item.totalValueNumeric ?? item.total_value ?? 0), 0);
+  const currentEarnings = completedRecords.reduce((acc, item) => acc + Number(item.commissionNumeric ?? item.commission ?? 0), 0);
+  const completedCount = completedRecords.length;
+
+  return {
+    totalBalance: completedCount ? totalBalance : Number(userBalance ?? 0),
+    currentEarnings: completedCount ? currentEarnings : Number(userBalance ?? 0),
+    entitlements: completedCount,
+    completed: completedCount,
+  };
 };
 
 function RecordCard({ record, onSubmit }) {
@@ -103,6 +139,8 @@ export default function GetStarted() {
     completed: 0,
   });
   const [records, setRecords] = useState([]);
+  const [recordQueue, setRecordQueue] = useState([]);
+  const [activeRecord, setActiveRecord] = useState(null);
   const [showRecords, setShowRecords] = useState(false);
   const [reviewingRecord, setReviewingRecord] = useState(null);
   const [selectedReviewId, setSelectedReviewId] = useState(null);
@@ -110,6 +148,9 @@ export default function GetStarted() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState(null);
   const [generateError, setGenerateError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [userBalance, setUserBalance] = useState(0);
+  const [userLevel, setUserLevel] = useState(null);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -118,31 +159,11 @@ export default function GetStarted() {
       try {
         const response = await apiClient.get("/records/images/");
         const payload = response?.data ?? {};
-        const normalisedRecords = (payload.records ?? []).map((record) => {
-          const statusKey = record.status?.toLowerCase() ?? "pending";
-          return {
-            ...record,
-            statusKey,
-            priceDisplay: formatCurrency(record.price),
-            commissionDisplay: formatCurrency(record.commission),
-            totalValueDisplay: formatCurrency(record.total_value ?? record.totalValue),
-            imageUrl: record.image_url || record.imageUrl,
-            timestampDisplay: formatTimestamp(record.updated_at ?? record.created_at),
-          };
-        });
+        const normalisedRecords = (payload.records ?? []).map((record) => normalizeRecord(record));
 
-        const totalBalance = normalisedRecords.reduce(
-          (acc, item) => acc + Number(item.total_value ?? item.totalValue ?? 0),
-          0,
-        );
-        const currentEarnings = normalisedRecords.reduce(
-          (acc, item) => acc + Number(item.commission ?? 0),
-          0,
-        );
-        const entitlements = normalisedRecords.length;
-        const completed = normalisedRecords.filter((item) => item.statusKey === "completed").length;
-
-        setSummary({ totalBalance, currentEarnings, entitlements, completed });
+        setUserBalance(Number(payload?.user_balance ?? 0));
+        setUserLevel(payload?.user_level ?? null);
+        setSummary(computeSummary(normalisedRecords, payload?.user_balance));
         setRecords(normalisedRecords);
       } catch (err) {
         console.error("Unable to load records", err);
@@ -158,10 +179,26 @@ export default function GetStarted() {
   const handleGenerate = () => {
     setGenerateError(null);
     setIsGenerating(true);
-    if (!records.length) {
-      setGenerateError("No records available to generate right now.");
+
+    const minimumBalance = Number(userLevel?.minimum_balance ?? 0);
+    if (minimumBalance && userBalance < minimumBalance) {
+      const message = `Balance not sufficient. Minimum required is ${formatCurrency(minimumBalance)}.`;
+      toast.error(message);
+      setGenerateError(message);
+      setIsGenerating(false);
+      return;
+    }
+
+    const pendingRecords = records.filter((item) => item.statusKey !== "completed");
+
+    if (!pendingRecords.length) {
+      setGenerateError("No pending records available to generate right now.");
       setShowRecords(false);
+      setActiveRecord(null);
+      setRecordQueue([]);
     } else {
+      setRecordQueue(pendingRecords);
+      setActiveRecord(pendingRecords[0]);
       setShowRecords(true);
     }
     setTimeout(() => setIsGenerating(false), 300);
@@ -176,6 +213,52 @@ export default function GetStarted() {
   const closeReviewModal = () => {
     setReviewingRecord(null);
     setSelectedReviewId(null);
+  };
+
+  const advanceQueue = (completedId) => {
+    setRecordQueue((prev) => {
+      const remaining = prev.filter((item) => item.id !== completedId);
+      if (!remaining.length) {
+        setActiveRecord(null);
+        setShowRecords(false);
+      } else {
+        setActiveRecord(remaining[0]);
+      }
+      return remaining;
+    });
+  };
+
+  const rehydrateRecord = (record) => normalizeRecord(record);
+
+  const handleSubmitReview = async () => {
+    if (!reviewingRecord || !selectedReviewId) {
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const { data } = await apiClient.post("/records/submit-review/", {
+        record_id: reviewingRecord.id,
+        review_id: selectedReviewId,
+      });
+
+      const updatedRecord = rehydrateRecord(data);
+
+      setRecords((prev) => {
+        const next = prev.map((item) => (item.id === updatedRecord.id ? updatedRecord : item));
+        setSummary(computeSummary(next, userBalance));
+        return next;
+      });
+
+      toast.success("Review submitted successfully.");
+      advanceQueue(reviewingRecord.id);
+      closeReviewModal();
+    } catch (err) {
+      console.error("Failed to submit review", err);
+      const message = err?.response?.data?.detail || "Unable to submit review. Please try again.";
+      toast.error(message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -242,11 +325,21 @@ export default function GetStarted() {
               </div>
             )}
 
-            {showRecords && (
+            {showRecords && activeRecord && (
               <div className="flex flex-col gap-5 pb-4">
-                {records.map((record) => (
-                  <RecordCard key={record.id} record={record} onSubmit={() => openReviewModal(record)} />
-                ))}
+                <RecordCard record={activeRecord} onSubmit={() => openReviewModal(activeRecord)} />
+                <p className="text-xs text-purple-200 text-center">
+                  {recordQueue.length > 1
+                    ? `Complete this task to unlock the next (${recordQueue.length - 1} remaining).`
+                    : "Complete this task to finish today’s queue."}
+                </p>
+              </div>
+            )}
+
+            {showRecords && !activeRecord && !isGenerating && (
+              <div className="rounded-3xl bg-white/5 border border-white/10 px-6 py-10 text-center text-white/70">
+                <p className="font-semibold text-white mb-2">All tasks completed</p>
+                <p className="text-sm">Tap Generate again later when new records are available.</p>
               </div>
             )}
           </section>
@@ -316,16 +409,11 @@ export default function GetStarted() {
                   <div className="pt-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!selectedReviewId) {
-                          return;
-                        }
-                        closeReviewModal();
-                      }}
+                      onClick={handleSubmitReview}
                       className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-3 rounded-full transition shadow-lg shadow-pink-500/30 disabled:opacity-70 disabled:cursor-not-allowed"
-                      disabled={!selectedReviewId}
+                      disabled={!selectedReviewId || isSubmitting}
                     >
-                      Submit
+                      {isSubmitting ? "Submitting…" : "Submit"}
                     </button>
                   </div>
                 </div>

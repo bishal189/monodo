@@ -106,6 +106,7 @@ export default function Records() {
   const [reviewingRecord, setReviewingRecord] = useState(null);
   const [selectedReviewId, setSelectedReviewId] = useState(null);
   const [userLevel, setUserLevel] = useState(null);
+  const [userBalance, setUserBalance] = useState(0);
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -118,11 +119,17 @@ export default function Records() {
         const response = await apiClient.get("/records/images/");
         const payload = response?.data ?? {};
         setUserLevel(payload.user_level ?? null);
+        const balance = Number(payload.user_balance ?? 0);
+        setUserBalance(balance);
+        const minimumBalance = Number(payload?.user_level?.minimum_balance ?? 0);
         const normalizedRecords = (payload.records ?? []).map((record) => {
           const statusKey = record.status?.toLowerCase() ?? "pending";
+          const isBlockedByBalance =
+            statusKey === "pending" && minimumBalance > 0 && balance < minimumBalance;
           return {
             ...record,
             statusKey,
+            isBlockedByBalance,
             priceDisplay: formatCurrency(record.price),
             commissionDisplay: formatCurrency(record.commission),
             totalValueDisplay: formatCurrency(record.total_value ?? record.totalValue),
@@ -144,10 +151,23 @@ export default function Records() {
 
   const filteredRecords = useMemo(() => {
     if (activeFilter === "all") {
-      return records;
+      return records.filter((record) => !(record.statusKey === "pending" && record.isBlockedByBalance));
     }
-    return records.filter((record) => record.statusKey === activeFilter);
+    return records.filter((record) => {
+      if (record.statusKey !== activeFilter) {
+        return false;
+      }
+      if (record.statusKey === "pending" && record.isBlockedByBalance) {
+        return false;
+      }
+      return true;
+    });
   }, [activeFilter, records]);
+
+  const blockedPendingCount = useMemo(
+    () => records.filter((record) => record.statusKey === "pending" && record.isBlockedByBalance).length,
+    [records]
+  );
 
   const openReviewModal = (record) => {
     setReviewingRecord(record);
@@ -189,6 +209,18 @@ export default function Records() {
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-100 rounded-3xl p-4 text-sm">
               {error}
+            </div>
+          )}
+
+          {blockedPendingCount > 0 && (
+            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-100 rounded-3xl p-4 text-sm">
+              Balance not sufficient to access {blockedPendingCount} pending record{blockedPendingCount > 1 ? "s" : ""}.
+              {userLevel?.minimum_balance && (
+                <span className="block mt-1">
+                  Minimum required: <span className="font-semibold text-white">{formatCurrency(userLevel.minimum_balance)}</span>
+                  , current balance: <span className="font-semibold text-white">{formatCurrency(userBalance)}</span>.
+                </span>
+              )}
             </div>
           )}
 
