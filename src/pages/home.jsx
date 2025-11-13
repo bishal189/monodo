@@ -1,21 +1,28 @@
-"use client"
+"use client";
 
+import { useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
   Heart,
   Star,
+  Globe,
+  Menu,
+  X,
 } from "lucide-react";
+import MomondoLogo from "../components/MomondoLogo";
 import PrimaryNav from "../components/PrimaryNav";
 
 export default function Home() {
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const listings = {
     kathmandu: [
       {
         id: 1,
         image:
           "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartments in Kathmandu",
+        name: "Apartment in Kathmandu",
         price: "$26 for 2 nights",
         rating: 4.95,
         reviews: 128,
@@ -208,194 +215,213 @@ export default function Home() {
   };
 
   const scroll = (section, direction) => {
-    const container = document.getElementById(`scroll-${section}`)
+    const container = document.getElementById(`scroll-${section}`);
     if (container) {
-      // Scroll by approximately 2 cards on mobile, 1 card on desktop
-      const isMobile = window.innerWidth < 640
-      const scrollAmount = isMobile ? container.offsetWidth : 320
-      container.scrollLeft += direction === "left" ? -scrollAmount : scrollAmount
+      const isMobile = window.innerWidth < 768;
+      const scrollAmount = isMobile ? container.offsetWidth * 0.9 : 320;
+      container.scrollLeft +=
+        direction === "left" ? -scrollAmount : scrollAmount;
     }
-  }
+  };
 
-  const ListingCard = ({ listing }) => (
-    <div className="flex-shrink-0 w-[45%] sm:w-72 md:w-80 cursor-pointer group">
-      <div className="relative mb-3 overflow-hidden rounded-lg h-40 sm:h-56 md:h-64">
-        <img
-          src={listing.image || "/placeholder.svg"}
-          alt={listing.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-        <button className="absolute top-2 right-2 sm:top-3 sm:right-3 bg-white rounded-full p-1.5 sm:p-2 hover:bg-gray-100 transition-colors">
-          <Heart size={16} className="sm:w-5 sm:h-5 text-gray-600" fill="white" />
-        </button>
-        <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-white text-gray-800 text-xs font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
-          Guest favorite
+const ListingCard = ({ listing }) => (
+  <div className="flex-shrink-0 w-[45vw] sm:w-64 md:w-72 cursor-pointer group bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl overflow-hidden shadow-md hover:scale-[1.02] transition-transform duration-300">
+    <div className="relative mb-2 overflow-hidden h-40 sm:h-48 md:h-56">
+      <img
+        src={listing.image}
+        alt={listing.name}
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+      />
+      <button className="absolute top-3 right-3 bg-white/70 rounded-full p-2 hover:bg-white transition-colors">
+        <Heart size={18} className="text-gray-700" />
+      </button>
+      <span className="absolute top-3 left-3 bg-white/80 text-gray-800 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+        Guest favorite
+      </span>
+    </div>
+    <div className="px-3 pb-3">
+      <h3 className="font-semibold text-white truncate text-sm sm:text-base">
+        {listing.name}
+      </h3>
+      <p className="text-pink-200 text-xs sm:text-sm">{listing.price}</p>
+      <div className="flex items-center gap-1 mt-1">
+        <Star size={14} fill="#FFD700" className="text-yellow-400" />
+        <span className="text-xs sm:text-sm font-medium text-white">
+          {listing.rating}
         </span>
       </div>
-      <div className="px-1">
-        <h3 className="font-semibold text-gray-900 truncate text-sm sm:text-base">{listing.name}</h3>
-        <p className="text-gray-600 text-xs sm:text-sm">{listing.price}</p>
-        <div className="flex items-center gap-1 mt-1">
-          <Star size={14} fill="#000" className="sm:w-4 sm:h-4 text-black" />
-          <span className="text-xs sm:text-sm font-medium">{listing.rating}</span>
-        </div>
-      </div>
     </div>
-  )
+  </div>
+);
+
 
   const ListingSection = ({ title, sectionKey, items }) => (
-    <div className="px-4 sm:px-8 py-6 sm:py-8 border-b border-gray-200">
+    <div className="px-4 sm:px-8 py-6 sm:py-8 border-b border-white/20">
       <div className="flex items-center justify-between mb-4 sm:mb-6">
-        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
-          {title} <span className="text-gray-500">›</span>
+        <h2 className="text-xl sm:text-2xl font-bold text-white">
+          {title} <span className="text-gray-300">›</span>
         </h2>
         <div className="flex gap-2">
-          <button
-            onClick={() => scroll(sectionKey, "left")}
-            className="p-1.5 sm:p-2 rounded-full border border-gray-300 hover:border-gray-600 transition-colors bg-white shadow-sm"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft size={18} className="sm:w-5 sm:h-5" />
-          </button>
-          <button
-            onClick={() => scroll(sectionKey, "right")}
-            className="p-1.5 sm:p-2 rounded-full border border-gray-300 hover:border-gray-600 transition-colors bg-white shadow-sm"
-            aria-label="Scroll right"
-          >
-            <ChevronRight size={18} className="sm:w-5 sm:h-5" />
-          </button>
-        </div>
-      </div>
+  <button
+    onClick={() => scroll(sectionKey, "left")}
+    className="p-1.5 sm:p-2 rounded-full border border-white/30 text-white bg-transparent hover:bg-white/20 transition-all"
+    aria-label="Scroll left"
+  >
+    <ChevronLeft size={18} className="sm:w-5 sm:h-5" />
+  </button>
+  <button
+    onClick={() => scroll(sectionKey, "right")}
+    className="p-1.5 sm:p-2 rounded-full border border-white/30 text-white bg-transparent hover:bg-white/20 transition-all"
+    aria-label="Scroll right"
+  >
+    <ChevronRight size={18} className="sm:w-5 sm:h-5" />
+  </button>
+</div>
 
-      <div 
-        id={`scroll-${sectionKey}`} 
-        className="flex gap-3 sm:gap-6 overflow-x-auto scroll-smooth hide-scrollbar"
-        style={{
-          scrollbarWidth: 'none',
-          msOverflowStyle: 'none',
-        }}
+      </div>
+      <div
+        id={`scroll-${sectionKey}`}
+        className="flex gap-4 sm:gap-6 overflow-x-auto scroll-smooth hide-scrollbar"
       >
         {items.map((listing) => (
           <ListingCard key={listing.id} listing={listing} />
         ))}
       </div>
-
-      {/* Hide scrollbar with CSS */}
       <style jsx>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
       `}</style>
     </div>
-  )
+  );
 
   return (
-
     <div className="bg-momondo-purple w-full min-h-full text-white">
-      <PrimaryNav />
+      <PrimaryNav/>
+     
 
       {/* Main Content */}
       <main className="pb-12">
-        <ListingSection title="Popular homes in Kathmandu" sectionKey="kathmandu" items={listings.kathmandu} />
-        <ListingSection title="Available next month in Seoul" sectionKey="seoul" items={listings.seoul} />
-        <ListingSection title="Stay in Tokyo" sectionKey="tokyo" items={listings.tokyo} />
+        <ListingSection
+          title="Popular homes in Kathmandu"
+          sectionKey="kathmandu"
+          items={listings.kathmandu}
+        />
+        <ListingSection
+          title="Available next month in Seoul"
+          sectionKey="seoul"
+          items={listings.seoul}
+        />
+        <ListingSection
+          title="Stay in Tokyo"
+          sectionKey="tokyo"
+          items={listings.tokyo}
+        />
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-100 border-t border-gray-200 py-8 sm:py-12">
+      <footer className="bg-momondo-purple border-t border-white/20 py-8 sm:py-12 text-white">
         <div className="px-4 sm:px-8 max-w-7xl mx-auto">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-6 sm:mb-8">
             <div>
-              <h3 className="font-bold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Support</h3>
-              <ul className="space-y-2 text-xs sm:text-sm text-gray-600">
+              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
+                Support
+              </h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Help Center
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Safety information
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Cancellation options
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Community</h3>
-              <ul className="space-y-2 text-xs sm:text-sm text-gray-600">
+              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
+                Community
+              </h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Airbnb Community
+                  <a href="#" className="hover:text-pink-300">
+                    momondo Community
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Forums
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Blog
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Hosting</h3>
-              <ul className="space-y-2 text-xs sm:text-sm text-gray-600">
+              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
+                Hosting
+              </h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Try hosting
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Hosting resources
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Community forum
                   </a>
                 </li>
               </ul>
             </div>
             <div>
-              <h3 className="font-bold text-gray-900 mb-3 sm:mb-4 text-sm sm:text-base">Company</h3>
-              <ul className="space-y-2 text-xs sm:text-sm text-gray-600">
+              <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
+                Company
+              </h3>
+              <ul className="space-y-2 text-xs sm:text-sm">
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     About
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Press
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-gray-900">
+                  <a href="#" className="hover:text-pink-300">
                     Careers
                   </a>
                 </li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-300 pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs sm:text-sm text-gray-600">
+          <div className="border-t border-white/20 pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs sm:text-sm">
             <p>© 2025 Airbnb, Inc. All rights reserved</p>
             <div className="flex gap-6">
-              <a href="#" className="hover:text-gray-900">
+              <a href="#" className="hover:text-pink-300">
                 Privacy
               </a>
-              <a href="#" className="hover:text-gray-900">
+              <a href="#" className="hover:text-pink-300">
                 Terms
               </a>
-              <a href="#" className="hover:text-gray-900">
+              <a href="#" className="hover:text-pink-300">
                 Sitemap
               </a>
             </div>
@@ -403,5 +429,5 @@ export default function Home() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
