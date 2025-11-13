@@ -1,188 +1,211 @@
 "use client"
 
-import { useState } from "react"
-import { ChevronLeft, ChevronRight, Heart, Star, Globe, Menu } from "lucide-react"
+import {
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  Star,
+} from "lucide-react";
+import PrimaryNav from "../components/PrimaryNav";
 
 export default function Home() {
-
-const listings = {
-  kathmandu: [
-    {
-      id: 1,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-      name: "Apartment in Kathmandu",
-      price: "$26 for 2 nights",
-      rating: 4.95,
-      reviews: 128,
-    },
-    {
-      id: 2,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-      name: "Room in Lalitpur",
-      price: "$64 for 2 nights",
-      rating: 4.99,
-      reviews: 214,
-    },
-    {
-      id: 3,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-      name: "Room in Lalitpur",
-      price: "$28 for 2 nights",
-      rating: 4.96,
-      reviews: 189,
-    },
-    {
-      id: 4,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-      name: "Apartment in Kathmandu",
-      price: "$156 for 2 nights",
-      rating: 4.96,
-      reviews: 245,
-    },
-    {
-      id: 5,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-      name: "Apartment in Kathmandu",
-      price: "$71 for 2 nights",
-      rating: 4.81,
-      reviews: 167,
-    },
-    {
-      id: 6,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-      name: "Apartment in Kathmandu",
-      price: "$89 for 2 nights",
-      rating: 4.97,
-      reviews: 298,
-    },
-    {
-      id: 7,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-      name: "Apartment in Lalitpur",
-      price: "$80 for 2 nights",
-      rating: 4.97,
-      reviews: 156,
-    },
-  ],
-
-  seoul: [
-    {
-      id: 8,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-      name: "Room in Jongno-gu",
-      price: "$168 for 2 nights",
-      rating: 4.94,
-      reviews: 342,
-    },
-    {
-      id: 9,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-      name: "Room in Dongjak-gu",
-      price: "$166 for 2 nights",
-      rating: 4.95,
-      reviews: 428,
-    },
-    {
-      id: 10,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-      name: "Home in Seoul",
-      price: "$140 for 2 nights",
-      rating: 5.0,
-      reviews: 612,
-    },
-    {
-      id: 11,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-      name: "Room in Mapo-gu",
-      price: "$81 for 2 nights",
-      rating: 4.87,
-      reviews: 298,
-    },
-    {
-      id: 12,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-      name: "Room in Seoul",
-      price: "$253 for 2 nights",
-      rating: 4.99,
-      reviews: 567,
-    },
-    {
-      id: 13,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-      name: "Hotel in Seoul",
-      price: "$765 for 2 nights",
-      rating: 5.0,
-      reviews: 890,
-    },
-    {
-      id: 14,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-      name: "Apartment in Seoul",
-      price: "$380 for 2 nights",
-      rating: 4.97,
-      reviews: 734,
-    },
-  ],
-
-  tokyo: [
-    {
-      id: 15,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-      name: "Apartment in Shibuya",
-      price: "$156 for 2 nights",
-      rating: 4.98,
-      reviews: 567,
-    },
-    {
-      id: 16,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-      name: "Room in Asakusa",
-      price: "$98 for 2 nights",
-      rating: 4.92,
-      reviews: 423,
-    },
-    {
-      id: 17,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-      name: "Condo in Shinjuku",
-      price: "$203 for 2 nights",
-      rating: 4.99,
-      reviews: 678,
-    },
-    {
-      id: 18,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-      name: "Apartment in Minato",
-      price: "$145 for 2 nights",
-      rating: 4.96,
-      reviews: 534,
-    },
-    {
-      id: 19,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-      name: "Room in Harajuku",
-      price: "$76 for 2 nights",
-      rating: 4.88,
-      reviews: 301,
-    },
-    {
-      id: 20,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-      name: "Penthouse in Tokyo",
-      price: "$456 for 2 nights",
-      rating: 5.0,
-      reviews: 892,
-    },
-    {
-      id: 21,
-      image: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-      name: "Traditional Stay in Tokyo",
-      price: "$234 for 2 nights",
-      rating: 4.97,
-      reviews: 612,
-    },
-  ],
-};
+  const listings = {
+    kathmandu: [
+      {
+        id: 1,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
+        name: "Apartments in Kathmandu",
+        price: "$26 for 2 nights",
+        rating: 4.95,
+        reviews: 128,
+      },
+      {
+        id: 2,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
+        name: "Room in Lalitpur",
+        price: "$64 for 2 nights",
+        rating: 4.99,
+        reviews: 214,
+      },
+      {
+        id: 3,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
+        name: "Room in Lalitpur",
+        price: "$28 for 2 nights",
+        rating: 4.96,
+        reviews: 189,
+      },
+      {
+        id: 4,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
+        name: "Apartment in Kathmandu",
+        price: "$156 for 2 nights",
+        rating: 4.96,
+        reviews: 245,
+      },
+      {
+        id: 5,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
+        name: "Apartment in Kathmandu",
+        price: "$71 for 2 nights",
+        rating: 4.81,
+        reviews: 167,
+      },
+      {
+        id: 6,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
+        name: "Apartment in Kathmandu",
+        price: "$89 for 2 nights",
+        rating: 4.97,
+        reviews: 298,
+      },
+      {
+        id: 7,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
+        name: "Apartment in Lalitpur",
+        price: "$80 for 2 nights",
+        rating: 4.97,
+        reviews: 156,
+      },
+    ],
+    seoul: [
+      {
+        id: 8,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
+        name: "Room in Jongno-gu",
+        price: "$168 for 2 nights",
+        rating: 4.94,
+        reviews: 342,
+      },
+      {
+        id: 9,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
+        name: "Room in Dongjak-gu",
+        price: "$166 for 2 nights",
+        rating: 4.95,
+        reviews: 428,
+      },
+      {
+        id: 10,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
+        name: "Home in Seoul",
+        price: "$140 for 2 nights",
+        rating: 5.0,
+        reviews: 612,
+      },
+      {
+        id: 11,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
+        name: "Room in Mapo-gu",
+        price: "$81 for 2 nights",
+        rating: 4.87,
+        reviews: 298,
+      },
+      {
+        id: 12,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
+        name: "Room in Seoul",
+        price: "$253 for 2 nights",
+        rating: 4.99,
+        reviews: 567,
+      },
+      {
+        id: 13,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
+        name: "Hotel in Seoul",
+        price: "$765 for 2 nights",
+        rating: 5.0,
+        reviews: 890,
+      },
+      {
+        id: 14,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
+        name: "Apartment in Seoul",
+        price: "$380 for 2 nights",
+        rating: 4.97,
+        reviews: 734,
+      },
+    ],
+    tokyo: [
+      {
+        id: 15,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
+        name: "Apartment in Shibuya",
+        price: "$156 for 2 nights",
+        rating: 4.98,
+        reviews: 567,
+      },
+      {
+        id: 16,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
+        name: "Room in Asakusa",
+        price: "$98 for 2 nights",
+        rating: 4.92,
+        reviews: 423,
+      },
+      {
+        id: 17,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
+        name: "Condo in Shinjuku",
+        price: "$203 for 2 nights",
+        rating: 4.99,
+        reviews: 678,
+      },
+      {
+        id: 18,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
+        name: "Apartment in Minato",
+        price: "$145 for 2 nights",
+        rating: 4.96,
+        reviews: 534,
+      },
+      {
+        id: 19,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
+        name: "Room in Harajuku",
+        price: "$76 for 2 nights",
+        rating: 4.88,
+        reviews: 301,
+      },
+      {
+        id: 20,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
+        name: "Penthouse in Tokyo",
+        price: "$456 for 2 nights",
+        rating: 5.0,
+        reviews: 892,
+      },
+      {
+        id: 21,
+        image:
+          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
+        name: "Traditional Stay in Tokyo",
+        price: "$234 for 2 nights",
+        rating: 4.97,
+        reviews: 612,
+      },
+    ],
+  };
 
   const scroll = (section, direction) => {
     const container = document.getElementById(`scroll-${section}`)
@@ -267,70 +290,9 @@ const listings = {
   )
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="px-4 sm:px-8 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6 sm:gap-12">
-            <div className="text-pink-500 font-bold text-xl sm:text-2xl">airbnb</div>
 
-            <nav className="hidden md:flex items-center gap-6 sm:gap-8">
-              <button className="flex items-center gap-2 hover:text-gray-600 text-sm font-medium">
-                <span>🏠</span> Homes
-              </button>
-              <button className="flex items-center gap-2 hover:text-gray-600 text-sm font-medium">
-                <span>🎈</span> Experiences{" "}
-                <span className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">NEW</span>
-              </button>
-              <button className="flex items-center gap-2 hover:text-gray-600 text-sm font-medium">
-                <span>🔒</span> Services{" "}
-                <span className="bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">NEW</span>
-              </button>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3 sm:gap-6">
-            <button className="hidden md:block text-sm font-medium hover:bg-gray-100 px-4 py-2 rounded-lg transition-colors">
-              Become a host
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <Globe size={20} />
-            </button>
-            <button className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-              <Menu size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Hero Section */}
-        <div className="px-4 sm:px-8 py-8 sm:py-16 bg-gray-50">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8 items-center">
-            {/* Hero Content */}
-            <div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 sm:mb-6 leading-tight">
-                Data to trust – for decisions that matter
-              </h1>
-              <p className="text-base sm:text-lg text-gray-700 mb-6 sm:mb-8 leading-relaxed">
-                Data isn't hard to find, but high-quality data is. At Airbnb you get real data collected from real
-                people – a natural starting point for on-point market research. So that your next decision is the right
-                one.
-              </p>
-              <button className="bg-pink-500 hover:bg-pink-600 text-white font-bold py-4 sm:py-6 px-8 sm:px-16 rounded-lg transition-colors text-lg sm:text-xl w-full sm:w-auto">
-                Get Started
-              </button>
-            </div>
-
-            {/* Hero Image */}
-            <div className="flex justify-center lg:justify-end mt-6 lg:mt-0">
-              <div className="w-full max-w-xs sm:max-w-md h-64 sm:h-80 bg-gradient-to-br from-gray-800 to-gray-900 rounded-lg shadow-xl flex items-center justify-center">
-                <div className="text-white text-center">
-                  <div className="w-24 sm:w-32 h-1 bg-amber-600 mx-auto rounded-full"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+    <div className="bg-momondo-purple w-full min-h-full text-white">
+      <PrimaryNav />
 
       {/* Main Content */}
       <main className="pb-12">

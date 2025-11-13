@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+
 import { toast } from "react-toastify";
 import { User, Phone, Lock, Eye, EyeOff, Gift } from "lucide-react";
 import MomondoLogo from "../components/MomondoLogo";
+import apiClient, { storeTokens, storeUser } from "../services/apiClient";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -46,20 +47,18 @@ export default function Register() {
     setIsSubmitting(true);
 
     try {
-      const { data } = await axios.post("http://localhost:8000/api/v1/register/", formData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+
+      const { data } = await apiClient.post("/register/", formData);
 
       toast.success(data?.message ?? "Registration successful!");
 
       if (data?.tokens) {
-        localStorage.setItem("authTokens", JSON.stringify(data.tokens));
+
+        storeTokens(data.tokens);
       }
 
       if (data?.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+        storeUser(data.user);
       }
 
       setFormData({

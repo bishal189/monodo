@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-import { toast } from "react-toastify";
-import MomondoLogo from "../components/MomondoLogo";
 
+import { toast } from "react-toastify";
 import { Lock, Eye, EyeOff } from "lucide-react";
+import MomondoLogo from "../components/MomondoLogo";
+import apiClient, { storeTokens, storeUser } from "../services/apiClient";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -28,20 +28,17 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-      const { data } = await axios.post("http://localhost:8000/api/v1/login/", formData, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
 
+      const { data } = await apiClient.post("/login/", formData);
       toast.success(data?.message ?? "Login successful!");
 
       if (data?.tokens) {
-        localStorage.setItem("authTokens", JSON.stringify(data.tokens));
+
+        storeTokens(data.tokens);
       }
 
       if (data?.user) {
-        localStorage.setItem("user", JSON.stringify(data.user));
+        storeUser(data.user);
       }
 
       setFormData({
@@ -82,7 +79,6 @@ export default function Login() {
                 name="username"
                 value={formData.username}
                 onChange={handleChange}
-
                 placeholder="Enter Username"
                 className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
                 required
@@ -128,14 +124,12 @@ export default function Login() {
                 />
                 Remember me
               </label>
-               <button className="text-pink-400 hover:text-pink-300 transition">
-                <Link
-              to="/forgot-password"
-              className="text-pink-400 hover:text-pink-300 transition font-semibold"
-            >
-              Forgot password?
-            </Link>
-              </button>
+              <Link
+                to="/forgot-password"
+                className="text-pink-400 hover:text-pink-300 transition font-semibold"
+              >
+                Forgot password?
+              </Link>
             </div>
 
             <button
@@ -146,8 +140,6 @@ export default function Login() {
               {isSubmitting ? "Signing In..." : "Sign In"}
             </button>
           </form>
-
-
           <p className="text-center text-purple-200 text-sm mt-6">
             Don't have an account?{" "}
             <Link
