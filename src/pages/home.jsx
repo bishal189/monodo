@@ -17,199 +17,155 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const listings = {
-    kathmandu: [
+    Dubai: [
       {
         id: 1,
         image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Kathmandu",
-        price: "$26 for 2 nights",
-        rating: 4.95,
+          "https://www.momondo.com/rimg/himg/52/7c/f4/expedia_group-2423447-c08ce1-359170.jpg?width=968&height=607&crop=true",
+        name: "Tecom, Hessa Street, Al Barsha South, 1, Dubai",
+        price: "$172 for 2 nights",
+        rating: 4,
         reviews: 128,
       },
       {
         id: 2,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Room in Lalitpur",
-        price: "$64 for 2 nights",
+        image:"https://content.r9cdn.net/rimg/himg/09/dc/33/expedia_group-5536349-177164054-662774.jpg?width=1020&height=1020&xhint=1080&yhint=666&crop=true&watermarkheight=28&watermarkpadding=10",
+        name: "Jumeirah Village, Dubai",
+        price: "$399 for 2 nights",
         rating: 4.99,
         reviews: 214,
       },
       {
         id: 3,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Room in Lalitpur",
-        price: "$28 for 2 nights",
+        image:"https://content.r9cdn.net/rimg/himg/2b/ad/54/expedia_group-302708-d7997d-944849.jpg?width=1020&height=1020&xhint=520&yhint=333&crop=true&watermarkheight=28&watermarkpadding=10",
+        name: "Atlantis, The Palm, Dubai",
+        price: "$1020 for 2 nights",
         rating: 4.96,
         reviews: 189,
       },
       {
         id: 4,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Kathmandu",
-        price: "$156 for 2 nights",
+        image:"https://content.r9cdn.net/rimg/himg/52/33/f5/ice-7057498-122953719-113267.jpg?width=1020&height=1020&xhint=1497&yhint=960&crop=true&watermarkheight=28&watermarkpadding=10",
+        name: "Marasi Drive,Dubai",
+        price: "$385 for 2 nights",
         rating: 4.96,
         reviews: 245,
       },
       {
         id: 5,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Kathmandu",
-        price: "$71 for 2 nights",
+        image:"https://content.r9cdn.net/rimg/himg/74/05/e4/leonardo-12863-177478294-689353.jpg?width=1020&height=1020&xhint=1620&yhint=843&crop=true&watermarkheight=28&watermarkpadding=10",
+        name: "Jumeirah Burj Al Arab ,Dubai",
+        price: "$1728 for 2 nights",
         rating: 4.81,
         reviews: 167,
       },
       {
         id: 6,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Kathmandu",
-        price: "$89 for 2 nights",
+        image:"https://content.r9cdn.net/rimg/himg/50/4e/ff/leonardo-139875-1721876-938194.jpg?width=1020&height=1020&xhint=1440&yhint=1000&crop=true&watermarkheight=28&watermarkpadding=10",
+        name: "Le Méridien Dubai Hotel & Conference Centre",
+        price: "$330 for 2 nights",
         rating: 4.97,
         reviews: 298,
       },
-      {
-        id: 7,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-seoul-cozy-FDUJ07tdkXWQyAwQhtQu1ddBUO5hZD.jpg",
-        name: "Apartment in Lalitpur",
-        price: "$80 for 2 nights",
-        rating: 4.97,
-        reviews: 156,
-      },
     ],
-    seoul: [
+    Paris: [
       {
         id: 8,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Room in Jongno-gu",
-        price: "$168 for 2 nights",
+        image:"https://www.momondo.com/rimg/himg/c3/da/26/leonardo-1070927-7229_sm_05_p_3000x2250_O-230896.jpg?width=836&height=607&crop=true",
+        name: "Pullman Paris Tour Eiffel",
+        price: "$431 for 2 nights",
         rating: 4.94,
         reviews: 342,
       },
       {
         id: 9,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Room in Dongjak-gu",
-        price: "$166 for 2 nights",
+        image:"https://content.r9cdn.net/rimg/himg/48/f8/dc/leonardo-1237489-Cit_Tour_Eiffel_Studio_Eiffel_Tower_View_.06-HR_O-353561.jpg?width=1020&height=1020&xhint=1500&yhint=1259&crop=true&watermarkheight=28&watermarkpadding=10 ",
+        name: "Citadines Tour Eiffel Paris",
+        price: "$204 for 2 nights",
         rating: 4.95,
         reviews: 428,
       },
       {
         id: 10,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Home in Seoul",
-        price: "$140 for 2 nights",
-        rating: 5.0,
+        image:"https://www.momondo.com/rimg/himg/01/ae/5b/leonardo-2936883-2119340-208422.jpg?width=836&height=607&crop=true",
+        name: "CitizenM Paris Gare de Lyon",
+        price: "$186 for 2 nights",
+        rating: 4.0,
         reviews: 612,
       },
       {
         id: 11,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Room in Mapo-gu",
-        price: "$81 for 2 nights",
+        image:"https://content.r9cdn.net/rimg/himg/6b/28/97/ice-21536-6e15d3-401908.jpg?width=1020&height=1020&xhint=1440&yhint=1036&crop=true&watermarkheight=28&watermarkpadding=10",
+        name: "Novotel Paris Centre Tour Eiffel",
+        price: "$172 for 2 nights",
         rating: 4.87,
         reviews: 298,
       },
       {
         id: 12,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Room in Seoul",
-        price: "$253 for 2 nights",
+        image:"https://content.r9cdn.net/rimg/himg/d9/a8/54/leonardo-20514-196423458-137046.jpg?width=1020&height=1020&xhint=1560&yhint=1000&crop=true&watermarkheight=28&watermarkpadding=10",
+        name: "Intercontinental Hotels Paris",
+        price: "$667 for 2 nights",
         rating: 4.99,
         reviews: 567,
       },
       {
         id: 13,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Hotel in Seoul",
-        price: "$765 for 2 nights",
-        rating: 5.0,
+        image:"https://content.r9cdn.net/rimg/himg/47/cc/40/ice-2074945-b82cd4-759010.jpg?width=1020&height=1020&xhint=1500&yhint=1080&crop=true&watermarkheight=28&watermarkpadding=10",
+        name: "Molitor Hotel & Spa Paris MGallery Collection",
+        price: "$348 for 2 nights",
+        rating: 4.5,
         reviews: 890,
-      },
-      {
-        id: 14,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/home-seoul-modern-NQN4Uhn4eN750K2AxVKlGEoOmpZqCt.jpg",
-        name: "Apartment in Seoul",
-        price: "$380 for 2 nights",
-        rating: 4.97,
-        reviews: 734,
       },
     ],
     tokyo: [
       {
         id: 15,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Apartment in Shibuya",
-        price: "$156 for 2 nights",
+        image:"https://www.momondo.com/rimg/himg/8a/9c/ba/leonardo-97042-1463735-035159.jpg?width=968&height=607&crop=true",
+        name: "The Prince Sakura Tower ,Tokyo ",
+        price: "$416 for 2 nights",
         rating: 4.98,
         reviews: 567,
       },
       {
         id: 16,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Room in Asakusa",
-        price: "$98 for 2 nights",
+        image:"https://www.momondo.com/rimg/himg/3a/0f/fd/ostrovok-185421-9b4b34-080446.jpg?width=968&height=607&crop=true",
+        name: "Intercontinental Hotels The Strings ,Tokyo",
+        price: "$526 for 2 nights",
         rating: 4.92,
         reviews: 423,
       },
       {
         id: 17,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Condo in Shinjuku",
-        price: "$203 for 2 nights",
+        image:"https://content.r9cdn.net/rimg/himg/cd/e9/b3/leonardo-1070660018-165512733-186681.jpg?width=552&height=552&xhint=1500&yhint=1000&crop=true&watermarkheight=28&watermarkpadding=10",
+        name: "Hotel Indigo Tokyo Shibuya",
+        price: "$523 for 2 nights",
         rating: 4.99,
         reviews: 678,
       },
       {
         id: 18,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Apartment in Minato",
-        price: "$145 for 2 nights",
+        image:"https://www.momondo.com/rimg/kimg/ff/93/8a5bf4406ad07e7f.jpg?width=968&height=607&crop=true",
+        name: "Asakusa Kokono Club Hotel",
+        price: "$201 for 2 nights",
         rating: 4.96,
         reviews: 534,
       },
       {
         id: 19,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Room in Harajuku",
-        price: "$76 for 2 nights",
+        image:"https://www.momondo.com/rimg/himg/bf/9b/51/leonardo-67422-989402-367889.jpg?width=968&height=607&crop=true",
+        name: "Sheraton Grande Tokyo Bay Hotel",
+        price: "$445 for 2 nights",
         rating: 4.88,
         reviews: 301,
       },
       {
         id: 20,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Penthouse in Tokyo",
-        price: "$456 for 2 nights",
+        image:"https://www.momondo.com/rimg/himg/4b/5f/96/ice-546402-97706102-704553.jpg?width=968&height=607&crop=true",
+        name: "Hotel New Otani Tokyo The Main",
+        price: "$434 for 2 nights",
         rating: 5.0,
         reviews: 892,
-      },
-      {
-        id: 21,
-        image:
-          "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/attachments/gen-images/public/room-lalitpur-balcony-view-Sjjm7v43pSpaeCmfTYcGdBNerKTZ5L.jpg",
-        name: "Traditional Stay in Tokyo",
-        price: "$234 for 2 nights",
-        rating: 4.97,
-        reviews: 612,
       },
     ],
   };
@@ -303,14 +259,14 @@ const ListingCard = ({ listing }) => (
       {/* Main Content */}
       <main className="pb-12">
         <ListingSection
-          title="Popular homes in Kathmandu"
-          sectionKey="kathmandu"
-          items={listings.kathmandu}
+          title="Popular Hotels in Dubai"
+          sectionKey="Dubai"
+          items={listings.Dubai}
         />
         <ListingSection
-          title="Available next month in Seoul"
-          sectionKey="seoul"
-          items={listings.seoul}
+          title="Popular Hotels in Paris"
+          sectionKey="Paris"
+          items={listings.Paris}
         />
         <ListingSection
           title="Stay in Tokyo"
