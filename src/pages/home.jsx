@@ -242,11 +242,6 @@ const ListingCard = ({ listing }) => (
           <ListingCard key={listing.id} listing={listing} />
         ))}
       </div>
-      <style jsx>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-      `}</style>
     </div>
   );
 

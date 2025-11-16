@@ -1,17 +1,27 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { Menu, X } from "lucide-react";
+import { 
+  Menu, 
+  X, 
+  FileText, 
+  Wallet, 
+  Gift, 
+  HelpCircle, 
+  Info, 
+  Rocket,
+  LogOut
+} from "lucide-react";
 import { toast } from "react-toastify";
 import MomondoLogo from "./MomondoLogo";
 import apiClient, { clearAuthStorage, getStoredUser, storeUser } from "../services/apiClient";
 
 const navItems = [
-  { path: "/records", label: "Records", icon: "📊" },
-  { path: "/deposit", label: "Deposit", icon: "💳" },
-  { path: "/invite", label: "Invite", icon: "🎁" },
-  { path: "/faq", label: "FAQ", icon: "❓" },
-  { path: "/about", label: "About", icon: "ℹ️" },
-  { path: "/get-started", label: "Get Started", icon: "🚀" },
+  { path: "/records", label: "Records", icon: FileText },
+  { path: "/deposit", label: "Deposit", icon: Wallet },
+  { path: "/invite", label: "Invite", icon: Gift },
+  { path: "/faq", label: "FAQ", icon: HelpCircle },
+  { path: "/about", label: "About", icon: Info },
+  { path: "/get-started", label: "Get Started", icon: Rocket },
 ];
 
 export default function PrimaryNav() {
@@ -84,6 +94,7 @@ export default function PrimaryNav() {
             <nav className="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-7 text-sm">
               {navItems.map((item) => {
                 const isActive = isActivePath(item.path);
+                const IconComponent = item.icon;
                 return (
                   <button
                     key={item.path}
@@ -92,7 +103,7 @@ export default function PrimaryNav() {
                       isActive ? "text-pink-300" : "text-white hover:text-pink-300"
                     }`}
                   >
-                    <span>{item.icon}</span>
+                    <IconComponent size={18} className="flex-shrink-0" />
                     <span className="whitespace-nowrap">{item.label}</span>
                   </button>
                 );
@@ -106,9 +117,10 @@ export default function PrimaryNav() {
             </span>
             <button
               onClick={handleLogout}
-              className="hidden md:block text-xs sm:text-sm font-medium bg-white/10 hover:bg-pink-600 px-3 sm:px-4 py-2 rounded-lg transition-colors text-white border border-white/20"
+              className="hidden md:flex items-center gap-2 text-xs sm:text-sm font-medium bg-white/10 hover:bg-pink-600 px-3 sm:px-4 py-2 rounded-lg transition-colors text-white border border-white/20"
             >
-              Logout
+              <LogOut size={16} />
+              <span>Logout</span>
             </button>
             <button
               className="p-2 hover:bg-pink-700 rounded-full transition-colors md:hidden text-white"
@@ -151,26 +163,29 @@ export default function PrimaryNav() {
         <nav className="flex flex-col gap-4 px-6 mt-6 text-white">
           {navItems.map((item) => {
             const isActive = isActivePath(item.path);
+            const IconComponent = item.icon;
             return (
               <button
                 key={item.path}
-                className={`text-left hover:text-pink-300 ${
+                className={`flex items-center gap-2 text-left hover:text-pink-300 ${
                   isActive ? "text-pink-300" : "text-white"
                 }`}
                 onClick={() => handleNavigate(item.path)}
               >
-                {item.icon} {item.label}
+                <IconComponent size={18} />
+                <span>{item.label}</span>
               </button>
             );
           })}
           <button
-            className="text-left hover:text-pink-300"
+            className="flex items-center gap-2 text-left hover:text-pink-300"
             onClick={() => {
               setMenuOpen(false);
               handleLogout();
             }}
           >
-            🚪 Logout
+            <LogOut size={18} />
+            <span>Logout</span>
           </button>
         </nav>
       </div>
