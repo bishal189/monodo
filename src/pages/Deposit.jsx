@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Wallet, DollarSign, MessageCircle, Check } from "lucide-react";
 import PrimaryNav from "../components/PrimaryNav";
+import Footer from "./footer";
 
 const suggestedAmounts = [100, 200, 300, 500, 1000, 1500, 2000];
 
@@ -149,6 +150,7 @@ export default function Deposit() {
           </div>
         </div>
       )}
+      <Footer />
     </div>
   );
 }

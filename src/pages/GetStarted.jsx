@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import PrimaryNav from "../components/PrimaryNav";
+import Footer from "./footer";
 import apiClient from "../services/apiClient";
 
 const statusMeta = {
@@ -422,6 +423,7 @@ export default function GetStarted() {
           )}
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

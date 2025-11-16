@@ -21,7 +21,7 @@ export default function Hero() {
         </div>
 
         <p className="text-gray-700 mb-8 max-w-2xl text-lg leading-relaxed">
-          Data isn't hard to find, but high-quality data is. At Airbnb you get real data collected from real people – a
+          Data isn't hard to find, but high-quality data is. Atmomondo you get real data collected from real people – a
           natural starting point for on-point market research. So that your next decision is the right one.
         </p>
 

@@ -1,6 +1,7 @@
 import { Gift, Share2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import PrimaryNav from "../components/PrimaryNav";
+import Footer from "./footer";
 import { toast } from "react-toastify";
 import apiClient, { storeUser } from "../services/apiClient";
 
@@ -163,6 +164,7 @@ export default function Invite() {
           </section>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

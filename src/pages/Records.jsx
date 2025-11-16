@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CheckCircle, Clock } from "lucide-react";
 import PrimaryNav from "../components/PrimaryNav";
+import Footer from "./footer";
 import apiClient from "../services/apiClient";
 
 const statusFilters = [
@@ -353,6 +354,7 @@ export default function Records() {
           `}</style>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

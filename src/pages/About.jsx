@@ -1,5 +1,6 @@
 import { Users, Sparkles, Globe2, Target } from "lucide-react";
 import PrimaryNav from "../components/PrimaryNav";
+import Footer from "./footer";
 
 const introParagraphs = [
   "We are a team of friendly travel professionals who have an engaging approach to work. Through our network, we instigate introductions and create opportunities for destinations and products that open doors and deliver results. We treat our clients as individuals and seek to understand and enhance their unique positioning within the marketplace creating a strategic and cost-effective solution for growth. We take pride in having a consistent team of experts. Always listening, learning and evolving.",
@@ -133,6 +134,7 @@ export default function About() {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

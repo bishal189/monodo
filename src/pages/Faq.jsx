@@ -1,5 +1,6 @@
 import { AlertTriangle, BookOpen } from "lucide-react";
 import PrimaryNav from "../components/PrimaryNav";
+import Footer from "./footer";
 
 const faqSections = [
   {
@@ -109,6 +110,7 @@ export default function Faq() {
           ))}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

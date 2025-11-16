@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { MessageCircle, Send, Headphones, Clock } from "lucide-react";
 import PrimaryNav from "../components/PrimaryNav";
+import Footer from "./footer";
 
 const initialMessages = [
   {
@@ -155,6 +156,7 @@ export default function Support() {
           </aside>
         </div>
       </div>
+      <Footer />
     </div>
   );
 }

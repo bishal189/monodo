@@ -1,104 +1,120 @@
+import { Link } from "react-router-dom";
+import MomondoLogo from "../components/MomondoLogo";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-50 border-t border-gray-200 py-12">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
-          <div className="flex items-center gap-2">
-            <svg className="w-6 h-6 text-red-500" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 0c-1.657 0-3-1.343-3-3s1.343-3 3-3 3 1.343 3 3-1.343 3-3 3zm0 4.5c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 9c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3z" />
-            </svg>
-            <span className="text-red-500 font-bold text-lg">airbnb</span>
+    <footer className="bg-momondo-purple border-t border-white/20 py-8 sm:py-12 text-white">
+      <div className="px-4 sm:px-8 max-w-7xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-8 mb-6 sm:mb-8">
+          <div>
+            <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
+              Support
+            </h3>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Help Center
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Safety information
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Cancellation options
+                </a>
+              </li>
+            </ul>
           </div>
-
-          <p className="text-gray-600 text-sm">© 2025 Airbnb, Inc.</p>
+          <div>
+            <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
+              Community
+            </h3>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  momondo Community
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Forums
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Blog
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
+              Hosting
+            </h3>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Try hosting
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Hosting resources
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Community forum
+                </a>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h3 className="font-bold mb-3 sm:mb-4 text-sm sm:text-base">
+              Company
+            </h3>
+            <ul className="space-y-2 text-xs sm:text-sm">
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  About
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Press
+                </a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-pink-300">
+                  Careers
+                </a>
+              </li>
+            </ul>
+          </div>
         </div>
-
-        <div className="border-t border-gray-200 pt-8">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Support</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Help Center
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Safety
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Cancellation
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Community</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Blog
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Forum
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Hosting</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Host your home
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Resources
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">About</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Press
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-900 mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Terms
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="hover:text-gray-900">
-                    Privacy
-                  </a>
-                </li>
-              </ul>
-            </div>
+        <div className="border-t border-white/20 pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs sm:text-sm">
+          <div className="flex items-center gap-2">
+            <Link to="/home" className="cursor-pointer hover:opacity-80 transition-opacity">
+              <MomondoLogo />
+            </Link>
+          </div>
+          <p>© 2025 momondo, Inc. All rights reserved</p>
+          <div className="flex gap-6">
+            <a href="#" className="hover:text-pink-300">
+              Privacy
+            </a>
+            <a href="#" className="hover:text-pink-300">
+              Terms
+            </a>
+            <a href="#" className="hover:text-pink-300">
+              Sitemap
+            </a>
           </div>
         </div>
       </div>
     </footer>
-  )
+  );
 }

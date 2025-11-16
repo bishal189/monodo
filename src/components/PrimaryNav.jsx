@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { toast } from "react-toastify";
 import MomondoLogo from "./MomondoLogo";
@@ -9,7 +9,6 @@ const navItems = [
   { path: "/records", label: "Records", icon: "📊" },
   { path: "/deposit", label: "Deposit", icon: "💳" },
   { path: "/invite", label: "Invite", icon: "🎁" },
-  { path: "/support", label: "Support", icon: "💬" },
   { path: "/faq", label: "FAQ", icon: "❓" },
   { path: "/about", label: "About", icon: "ℹ️" },
   { path: "/get-started", label: "Get Started", icon: "🚀" },
@@ -79,7 +78,9 @@ export default function PrimaryNav() {
       <header className="border-b border-white/20 sticky top-0 bg-momondo-purple z-50">
         <div className="px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-6 sm:gap-10 lg:gap-12 min-w-0">
-            <MomondoLogo />
+            <Link to="/home" className="cursor-pointer hover:opacity-80 transition-opacity">
+              <MomondoLogo />
+            </Link>
             <nav className="hidden md:flex items-center gap-4 lg:gap-6 xl:gap-7 text-sm">
               {navItems.map((item) => {
                 const isActive = isActivePath(item.path);
