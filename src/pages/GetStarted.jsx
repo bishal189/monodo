@@ -67,13 +67,15 @@ const normalizeRecord = (record) => {
 
 const computeSummary = (records, userBalance = 0) => {
   const completedRecords = records.filter((item) => item.statusKey === "completed");
-  const totalBalance = completedRecords.reduce((acc, item) => acc + Number(item.totalValueNumeric ?? item.total_value ?? 0), 0);
+  // Use actual user balance from database (matches withdraw page)
+  const totalBalance = Number(userBalance ?? 0);
+  // Calculate current earnings as sum of commissions from completed records
   const currentEarnings = completedRecords.reduce((acc, item) => acc + Number(item.commissionNumeric ?? item.commission ?? 0), 0);
   const completedCount = completedRecords.length;
 
   return {
-    totalBalance: completedCount ? totalBalance : Number(userBalance ?? 0),
-    currentEarnings: completedCount ? currentEarnings : Number(userBalance ?? 0),
+    totalBalance: totalBalance,
+    currentEarnings: currentEarnings,
     entitlements: completedCount,
     completed: completedCount,
   };
@@ -139,7 +141,8 @@ export default function GetStarted() {
     entitlements: 0,
     completed: 0,
   });
-  const [records, setRecords] = useState([]);
+  const [allRecords, setAllRecords] = useState([]); // Store ALL records (pending + completed) for summary
+  const [records, setRecords] = useState([]); // Store only PENDING records for generation
   const [recordQueue, setRecordQueue] = useState([]);
   const [activeRecord, setActiveRecord] = useState(null);
   const [showRecords, setShowRecords] = useState(false);
@@ -160,12 +163,22 @@ export default function GetStarted() {
       try {
         const response = await apiClient.get("/records/images/");
         const payload = response?.data ?? {};
-        const normalisedRecords = (payload.records ?? []).map((record) => normalizeRecord(record));
+        
+        // Normalize ALL records (both pending and completed)
+        const allNormalisedRecords = (payload.records ?? []).map((record) => normalizeRecord(record));
+        
+        // Separate: PENDING records for generation, ALL records for summary
+        const pendingRecords = allNormalisedRecords.filter((record) => record.statusKey !== "completed");
 
         setUserBalance(Number(payload?.user_balance ?? 0));
         setUserLevel(payload?.user_level ?? null);
-        setSummary(computeSummary(normalisedRecords, payload?.user_balance));
-        setRecords(normalisedRecords);
+        
+        // Use ALL records for summary calculation (includes completed)
+        setSummary(computeSummary(allNormalisedRecords, payload?.user_balance));
+        
+        // Store all records for summary, but only pending for generation
+        setAllRecords(allNormalisedRecords);
+        setRecords(pendingRecords);
       } catch (err) {
         console.error("Unable to load records", err);
         setError("Unable to load records at the moment. Please try again shortly.");
@@ -177,7 +190,7 @@ export default function GetStarted() {
     fetchRecords();
   }, []);
 
-  const handleGenerate = () => {
+  const handleGenerate = async () => {
     setGenerateError(null);
     setIsGenerating(true);
 
@@ -190,18 +203,52 @@ export default function GetStarted() {
       return;
     }
 
-    const pendingRecords = records.filter((item) => item.statusKey !== "completed");
+    // Refresh records to ensure we have the latest data
+    try {
+      const response = await apiClient.get("/records/images/");
+      const payload = response?.data ?? {};
+      const updatedBalance = Number(payload?.user_balance ?? 0);
+      setUserBalance(updatedBalance);
 
-    if (!pendingRecords.length) {
-      setGenerateError("No pending records available to generate right now.");
-      setShowRecords(false);
-      setActiveRecord(null);
-      setRecordQueue([]);
-    } else {
-      setRecordQueue(pendingRecords);
-      setActiveRecord(pendingRecords[0]);
-      setShowRecords(true);
+      // Normalize ALL records (both pending and completed)
+      const allFreshRecords = (payload.records ?? []).map((record) => normalizeRecord(record));
+      
+      // Separate: PENDING records for generation, ALL records for summary
+      const freshPendingRecords = allFreshRecords.filter((record) => record.statusKey !== "completed");
+
+      // Update records: all for summary, only pending for generation
+      setAllRecords(allFreshRecords);
+      setRecords(freshPendingRecords);
+      
+      // Use ALL records (including completed) for summary calculation
+      setSummary(computeSummary(allFreshRecords, updatedBalance));
+
+      if (!freshPendingRecords.length) {
+        setGenerateError("No pending records available to generate right now.");
+        setShowRecords(false);
+        setActiveRecord(null);
+        setRecordQueue([]);
+      } else {
+        setRecordQueue(freshPendingRecords);
+        setActiveRecord(freshPendingRecords[0]);
+        setShowRecords(true);
+      }
+    } catch (err) {
+      console.error("Failed to refresh records", err);
+      // Fallback to existing records if refresh fails
+      const pendingRecords = records.filter((item) => item.statusKey !== "completed");
+      if (!pendingRecords.length) {
+        setGenerateError("No pending records available to generate right now.");
+        setShowRecords(false);
+        setActiveRecord(null);
+        setRecordQueue([]);
+      } else {
+        setRecordQueue(pendingRecords);
+        setActiveRecord(pendingRecords[0]);
+        setShowRecords(true);
+      }
     }
+
     setTimeout(() => setIsGenerating(false), 300);
   };
 
@@ -242,13 +289,40 @@ export default function GetStarted() {
         review_id: selectedReviewId,
       });
 
-      const updatedRecord = rehydrateRecord(data);
+      // Handle new API response format with record and user_stats
+      const recordData = data.record || data;
+      const updatedRecord = rehydrateRecord(recordData);
 
-      setRecords((prev) => {
-        const next = prev.map((item) => (item.id === updatedRecord.id ? updatedRecord : item));
-        setSummary(computeSummary(next, userBalance));
-        return next;
-      });
+      // Refresh user balance and records from API to get updated data after commission is added
+      try {
+        const response = await apiClient.get("/records/images/");
+        const payload = response?.data ?? {};
+        const updatedBalance = Number(payload?.user_balance ?? userBalance);
+        setUserBalance(updatedBalance);
+
+        // Normalize ALL records (both pending and completed)
+        const allFreshRecords = (payload.records ?? []).map((record) => normalizeRecord(record));
+        
+        // Separate: PENDING records for generation, ALL records for summary
+        const freshPendingRecords = allFreshRecords.filter((record) => record.statusKey !== "completed");
+
+        // Update records: all for summary, only pending for generation
+        setAllRecords(allFreshRecords);
+        setRecords(freshPendingRecords);
+        
+        // Use ALL records (including completed) for summary calculation
+        setSummary(computeSummary(allFreshRecords, updatedBalance));
+      } catch (refreshErr) {
+        // If refresh fails, update records by removing completed one
+        console.error("Failed to refresh balance", refreshErr);
+        const updatedRecordWithCompleted = rehydrateRecord(recordData);
+        setAllRecords((prev) => {
+          const next = prev.map((item) => (item.id === updatedRecordWithCompleted.id ? updatedRecordWithCompleted : item));
+          setSummary(computeSummary(next, userBalance));
+          return next;
+        });
+        setRecords((prev) => prev.filter((item) => item.id !== reviewingRecord.id));
+      }
 
       toast.success("Review submitted successfully.");
       advanceQueue(reviewingRecord.id);
