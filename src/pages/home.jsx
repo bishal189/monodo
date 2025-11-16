@@ -1,20 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
   Heart,
   Star,
   Globe,
-  Menu,
-  X,
+  Sparkles,
+  ArrowRight,
 } from "lucide-react";
-import MomondoLogo from "../components/MomondoLogo";
+import { Link } from "react-router-dom";
 import PrimaryNav from "../components/PrimaryNav";
 
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const listings = {
     Dubai: [
@@ -254,7 +252,51 @@ const ListingCard = ({ listing }) => (
   return (
     <div className="bg-momondo-purple w-full min-h-full text-white">
       <PrimaryNav/>
-     
+
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-momondo-purple via-purple-900 to-pink-900">
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmZmZmYiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PGNpcmNsZSBjeD0iMzAiIGN5PSIzMCIgcj0iMiIvPjwvZz48L2c+PC9zdmc+')] opacity-30"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-24">
+          <div className="text-center space-y-6 sm:space-y-8">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 rounded-full px-4 py-2 text-sm font-medium text-white/90">
+              <Sparkles className="w-4 h-4 text-pink-300" />
+              <span>Discover Amazing Destinations</span>
+            </div>
+            
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
+              <span className="bg-gradient-to-r from-white via-pink-100 to-pink-200 bg-clip-text text-transparent">
+                Find Your Perfect
+              </span>
+              <br />
+              <span className="text-white">Stay Anywhere</span>
+            </h1>
+            
+            <p className="text-lg sm:text-xl text-purple-200 max-w-2xl mx-auto leading-relaxed">
+              Explore thousands of unique accommodations around the world. 
+              From cozy apartments to luxury hotels, find the perfect place for your next adventure.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              <Link
+                to="/get-started"
+                className="group inline-flex items-center gap-3 bg-gradient-to-r from-pink-500 to-rose-600 hover:from-pink-600 hover:to-rose-700 text-white font-semibold px-8 py-4 rounded-full transition-all transform hover:scale-105 shadow-lg shadow-pink-500/30 hover:shadow-pink-500/50"
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>Get Started</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </Link>
+              
+              <button className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 hover:bg-white/20 text-white font-semibold px-8 py-4 rounded-full transition-all">
+                <Globe className="w-5 h-5" />
+                <span>Explore More</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Decorative elements */}
+        <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-momondo-purple to-transparent"></div>
+      </section>
 
       {/* Main Content */}
       <main className="pb-12">
