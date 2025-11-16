@@ -154,7 +154,10 @@ export default function GetStarted() {
   const [generateError, setGenerateError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userBalance, setUserBalance] = useState(0);
+  const [todaysCommission, setTodaysCommission] = useState(0);
   const [userLevel, setUserLevel] = useState(null);
+  const [completionMessage, setCompletionMessage] = useState(null);
+  const [allCompleted, setAllCompleted] = useState(false);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -171,7 +174,12 @@ export default function GetStarted() {
         const pendingRecords = allNormalisedRecords.filter((record) => record.statusKey !== "completed");
 
         setUserBalance(Number(payload?.user_balance ?? 0));
+        setTodaysCommission(Number(payload?.todays_commission ?? 0));
         setUserLevel(payload?.user_level ?? null);
+        
+        // Store completion message and status
+        setCompletionMessage(payload?.completion_message ?? null);
+        setAllCompleted(payload?.all_completed ?? false);
         
         // Use ALL records for summary calculation (includes completed)
         setSummary(computeSummary(allNormalisedRecords, payload?.user_balance));
@@ -209,6 +217,11 @@ export default function GetStarted() {
       const payload = response?.data ?? {};
       const updatedBalance = Number(payload?.user_balance ?? 0);
       setUserBalance(updatedBalance);
+      setTodaysCommission(Number(payload?.todays_commission ?? 0));
+
+      // Store completion message and status
+      setCompletionMessage(payload?.completion_message ?? null);
+      setAllCompleted(payload?.all_completed ?? false);
 
       // Normalize ALL records (both pending and completed)
       const allFreshRecords = (payload.records ?? []).map((record) => normalizeRecord(record));
@@ -293,12 +306,28 @@ export default function GetStarted() {
       const recordData = data.record || data;
       const updatedRecord = rehydrateRecord(recordData);
 
+      // Update user stats immediately from response (real-time update)
+      if (data.user_stats) {
+        const stats = data.user_stats;
+        if (stats.balance !== undefined) {
+          setUserBalance(Number(stats.balance));
+        }
+        if (stats.todays_commission !== undefined) {
+          setTodaysCommission(Number(stats.todays_commission));
+        }
+      }
+
       // Refresh user balance and records from API to get updated data after commission is added
       try {
         const response = await apiClient.get("/records/images/");
         const payload = response?.data ?? {};
         const updatedBalance = Number(payload?.user_balance ?? userBalance);
         setUserBalance(updatedBalance);
+        setTodaysCommission(Number(payload?.todays_commission ?? todaysCommission));
+
+        // Store completion message and status
+        setCompletionMessage(payload?.completion_message ?? null);
+        setAllCompleted(payload?.all_completed ?? false);
 
         // Normalize ALL records (both pending and completed)
         const allFreshRecords = (payload.records ?? []).map((record) => normalizeRecord(record));
@@ -329,8 +358,31 @@ export default function GetStarted() {
       closeReviewModal();
     } catch (err) {
       console.error("Failed to submit review", err);
-      const message = err?.response?.data?.detail || "Unable to submit review. Please try again.";
-      toast.error(message);
+      const errorData = err?.response?.data || {};
+      
+      // Handle insufficient balance error
+      if (errorData.error === 'insufficient_balance') {
+        const message = errorData.detail || `Balance not sufficient. You need $${errorData.required_amount || '0.00'} but you have $${errorData.current_balance || '0.00'}. Please deposit $${errorData.insufficient_amount || '0.00'} to proceed.`;
+        toast.error(message, {
+          autoClose: 5000,
+          style: {
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            color: '#c33',
+          }
+        });
+        
+        // Update frozen amount if provided
+        if (errorData.frozen_amount !== undefined) {
+          // You might want to update a state variable for frozen amount here
+          // For now, just log it
+          console.log('Frozen amount:', errorData.frozen_amount);
+        }
+      } else {
+        // Handle other errors
+        const message = errorData.detail || "Unable to submit review. Please try again.";
+        toast.error(message);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -357,14 +409,31 @@ export default function GetStarted() {
               </div>
             )}
 
+            {completionMessage && (
+              <div className={`mt-4 rounded-2xl px-4 py-3 text-sm ${
+                allCompleted 
+                  ? 'bg-gradient-to-r from-emerald-500/20 to-green-500/20 border border-emerald-500/30 text-emerald-100' 
+                  : 'bg-blue-500/10 border border-blue-500/30 text-blue-100'
+              }`}>
+                <div className="flex items-center gap-2">
+                  {allCompleted && (
+                    <svg className="w-5 h-5 text-emerald-300" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <p className="font-semibold">{completionMessage}</p>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-3 mt-6">
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Total Balance</p>
                 <p className="text-xl font-semibold mt-1">{formatCurrency(summary.totalBalance)}</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
-                <p className="text-xs uppercase tracking-wide text-purple-200">Current Earnings</p>
-                <p className="text-xl font-semibold mt-1">{formatCurrency(summary.currentEarnings)}</p>
+                <p className="text-xs uppercase tracking-wide text-purple-200">Today's Commission</p>
+                <p className="text-xl font-semibold mt-1">{formatCurrency(todaysCommission)}</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Entitlements</p>
@@ -401,12 +470,12 @@ export default function GetStarted() {
             )}
 
             {showRecords && activeRecord && (
-              <div className="flex flex-col gap-5 pb-4">
+              <div className="flex flex-col gap-5 pt-2">
                 <RecordCard record={activeRecord} onSubmit={() => openReviewModal(activeRecord)} />
                 <p className="text-xs text-purple-200 text-center">
                   {recordQueue.length > 1
                     ? `Complete this task to unlock the next (${recordQueue.length - 1} remaining).`
-                    : "Complete this task to finish today’s queue."}
+                    : "Complete this task to finish today's queue."}
                 </p>
               </div>
             )}

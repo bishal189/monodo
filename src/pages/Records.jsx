@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle, Clock } from "lucide-react";
+import { CheckCircle, Clock, Loader2 } from "lucide-react";
+import { toast } from "react-toastify";
 import PrimaryNav from "../components/PrimaryNav";
 import Footer from "./footer";
 import apiClient from "../services/apiClient";
@@ -89,15 +90,17 @@ function RecordCard({ record, onSubmit }) {
         </div>
       </div>
 
-      <div className="px-4 pb-4">
-        <button
-          type="button"
-          onClick={onSubmit}
-          className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-2.5 rounded-full transition shadow-md shadow-pink-500/30"
-        >
-          Submit
-        </button>
-      </div>
+      {record.statusKey === 'pending' && (
+        <div className="px-4 pb-4">
+          <button
+            type="button"
+            onClick={onSubmit}
+            className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-2.5 rounded-full transition shadow-md shadow-pink-500/30"
+          >
+            Submit
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -111,6 +114,7 @@ export default function Records() {
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchRecords = async () => {
@@ -148,7 +152,7 @@ export default function Records() {
     };
 
     fetchRecords();
-  }, []);
+  }, [activeFilter]);
 
   const filteredRecords = useMemo(() => {
     if (activeFilter === "all") {
@@ -179,6 +183,100 @@ export default function Records() {
   const closeReviewModal = () => {
     setReviewingRecord(null);
     setSelectedReviewId(null);
+  };
+
+  const handleSubmitReview = async () => {
+    if (!reviewingRecord || !selectedReviewId) {
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      const { data } = await apiClient.post("/records/submit-review/", {
+        record_id: reviewingRecord.id,
+        review_id: selectedReviewId,
+      });
+
+      // Handle insufficient balance error
+      if (data.error === 'insufficient_balance') {
+        const message = data.detail || `Balance not sufficient. You need $${data.required_amount || '0.00'} but you have $${data.current_balance || '0.00'}. Please deposit $${data.insufficient_amount || '0.00'} to proceed.`;
+        toast.error(message, {
+          autoClose: 5000,
+          style: {
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            color: '#c33',
+          }
+        });
+        closeReviewModal();
+        return;
+      }
+
+      // Update user stats if provided
+      if (data.user_stats) {
+        const stats = data.user_stats;
+        if (stats.balance !== undefined) {
+          setUserBalance(Number(stats.balance));
+        }
+      }
+
+      // Refresh records to get updated data
+      try {
+        const response = await apiClient.get("/records/images/");
+        const payload = response?.data ?? {};
+        const updatedBalance = Number(payload?.user_balance ?? userBalance);
+        setUserBalance(updatedBalance);
+        
+        const normalizedRecords = (payload.records ?? []).map((record) => {
+          const statusKey = record.status?.toLowerCase() ?? "pending";
+          const minimumBalance = Number(payload?.user_level?.minimum_balance ?? 0);
+          const isBlockedByBalance =
+            statusKey === "pending" && minimumBalance > 0 && updatedBalance < minimumBalance;
+          return {
+            ...record,
+            statusKey,
+            isBlockedByBalance,
+            priceDisplay: formatCurrency(record.price),
+            commissionDisplay: formatCurrency(record.commission),
+            totalValueDisplay: formatCurrency(record.total_value ?? record.totalValue),
+            imageUrl: record.image_url || record.imageUrl,
+            timestampDisplay: formatTimestamp(record.updated_at ?? record.created_at),
+          };
+        });
+        setRecords(normalizedRecords);
+      } catch (refreshErr) {
+        console.error("Failed to refresh records", refreshErr);
+        // Update records manually - mark the submitted record as completed
+        setRecords((prev) => prev.map((item) => 
+          item.id === reviewingRecord.id 
+            ? { ...item, statusKey: 'completed', status: 'COMPLETED' }
+            : item
+        ));
+      }
+
+      toast.success("Review submitted successfully.");
+      closeReviewModal();
+    } catch (err) {
+      console.error("Failed to submit review", err);
+      const errorData = err?.response?.data || {};
+      
+      // Handle insufficient balance error
+      if (errorData.error === 'insufficient_balance') {
+        const message = errorData.detail || `Balance not sufficient. You need $${errorData.required_amount || '0.00'} but you have $${errorData.current_balance || '0.00'}. Please deposit $${errorData.insufficient_amount || '0.00'} to proceed.`;
+        toast.error(message, {
+          autoClose: 5000,
+          style: {
+            backgroundColor: '#fee',
+            border: '1px solid #fcc',
+            color: '#c33',
+          }
+        });
+      } else {
+        const message = errorData.detail || "Unable to submit review. Please try again.";
+        toast.error(message);
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -319,17 +417,18 @@ export default function Records() {
                   <div className="pt-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        if (!selectedReviewId) {
-                          return;
-                        }
-                        // Placeholder for submit action.
-                        closeReviewModal();
-                      }}
-                      className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-3 rounded-full transition shadow-lg shadow-pink-500/30 disabled:opacity-70 disabled:cursor-not-allowed"
-                      disabled={!selectedReviewId}
+                      onClick={handleSubmitReview}
+                      className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-3 rounded-full transition shadow-lg shadow-pink-500/30 disabled:opacity-70 disabled:cursor-not-allowed inline-flex items-center justify-center gap-2"
+                      disabled={!selectedReviewId || isSubmitting}
                     >
-                      Submit
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        "Submit"
+                      )}
                     </button>
                   </div>
                 </div>
