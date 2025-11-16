@@ -10,7 +10,8 @@ import {
   HelpCircle, 
   Info, 
   Rocket,
-  LogOut
+  LogOut,
+  Receipt
 } from "lucide-react";
 import { toast } from "react-toastify";
 import MomondoLogo from "./MomondoLogo";
@@ -20,6 +21,7 @@ const navItems = [
   { path: "/records", label: "Records", icon: FileText },
   { path: "/deposit", label: "Deposit", icon: Wallet },
   { path: "/withdraw", label: "Withdraw", icon: ArrowDownCircle },
+  { path: "/transactions", label: "Transactions", icon: Receipt },
   { path: "/invite", label: "Invite", icon: Gift },
   { path: "/faq", label: "FAQ", icon: HelpCircle },
   { path: "/about", label: "About", icon: Info },
