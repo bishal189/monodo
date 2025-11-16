@@ -5,6 +5,7 @@ import {
   X, 
   FileText, 
   Wallet, 
+  ArrowDownCircle,
   Gift, 
   HelpCircle, 
   Info, 
@@ -18,6 +19,7 @@ import apiClient, { clearAuthStorage, getStoredUser, storeUser } from "../servic
 const navItems = [
   { path: "/records", label: "Records", icon: FileText },
   { path: "/deposit", label: "Deposit", icon: Wallet },
+  { path: "/withdraw", label: "Withdraw", icon: ArrowDownCircle },
   { path: "/invite", label: "Invite", icon: Gift },
   { path: "/faq", label: "FAQ", icon: HelpCircle },
   { path: "/about", label: "About", icon: Info },

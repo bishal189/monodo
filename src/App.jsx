@@ -9,6 +9,7 @@ import Faq from "./pages/Faq";
 import Invite from "./pages/Invite";
 import About from "./pages/About";
 import Deposit from "./pages/Deposit";
+import Withdraw from "./pages/Withdraw";
 import Support from "./pages/Support";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -59,6 +60,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Deposit />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/withdraw"
+            element={
+              <ProtectedRoute>
+                <Withdraw />
               </ProtectedRoute>
             }
           />
