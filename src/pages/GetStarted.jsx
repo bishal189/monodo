@@ -382,29 +382,24 @@ export default function GetStarted() {
                   </div>
 
                   <div className="space-y-2.5">
-                    <p className="text-sm font-semibold text-[#374151]">Available Reviews</p>
-                    <div className="max-h-64 overflow-y-auto space-y-3 rounded-xl border border-[#D1D5DB] p-3 bg-white shadow-inner">
-                      {(reviewingRecord?.reviews ?? []).map((review) => {
-                        const isSelected = review.id === selectedReviewId;
-                        return (
-                          <button
-                            key={review.id}
-                            type="button"
-                            onClick={() => setSelectedReviewId(review.id)}
-                            className={`w-full text-left text-sm rounded-xl px-4 py-3 transition ${
-                              isSelected
-                                ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white border border-transparent shadow-lg shadow-pink-500/30"
-                                : "bg-[#F9FAFB] border border-[#E5E7EB] text-[#374151] hover:bg-[#F3F4F6]"
-                            }`}
-                          >
-                            {review.review_text}
-                          </button>
-                        );
-                      })}
-                      {(reviewingRecord?.reviews ?? []).length === 0 && (
-                        <p className="text-sm text-[#6B7280] text-center py-2">No reviews available.</p>
-                      )}
-                    </div>
+                    <label className="text-sm font-semibold text-[#374151]">Select Review</label>
+                    <select
+                      value={selectedReviewId || ""}
+                      onChange={(e) => setSelectedReviewId(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-[#D1D5DB] bg-white text-[#374151] text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23374151%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>')] bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10"
+                    >
+                      <option value="" disabled>
+                        Choose a review...
+                      </option>
+                      {(reviewingRecord?.reviews ?? []).map((review) => (
+                        <option key={review.id} value={review.id}>
+                          {review.review_text}
+                        </option>
+                      ))}
+                    </select>
+                    {(reviewingRecord?.reviews ?? []).length === 0 && (
+                      <p className="text-sm text-[#6B7280] text-center py-2">No reviews available.</p>
+                    )}
                   </div>
 
                   <div className="pt-2">
