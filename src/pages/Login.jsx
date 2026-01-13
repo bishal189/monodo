@@ -4,13 +4,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import MomondoLogo from "../components/MomondoLogo";
-import apiClient, { storeTokens, storeUser } from "../services/apiClient";
+import apiClient, { storeTokens } from "../services/apiClient";
 
 export default function Login() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: "",
-    login_password: "",
+    email: "",
+    password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,22 +28,22 @@ export default function Login() {
     setIsSubmitting(true);
 
     try {
-
-      const { data } = await apiClient.post("/login/", formData);
-      toast.success(data?.message ?? "Login successful!");
-
-      if (data?.tokens) {
-
-        storeTokens(data.tokens);
-      }
-
-      if (data?.user) {
-        storeUser(data.user);
+      const { data } = await apiClient.post("/api/auth/login/", formData);
+      
+      if (data?.refresh && data?.access) {
+        storeTokens({
+          refresh: data.refresh,
+          access: data.access,
+        });
+        toast.success("Login successful!");
+      } else {
+        toast.error("Invalid response from server.");
+        return;
       }
 
       setFormData({
-        username: "",
-        login_password: "",
+        email: "",
+        password: "",
       });
 
       setTimeout(() => navigate("/home"), 800);
@@ -72,14 +72,14 @@ export default function Login() {
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
               <label className="block text-purple-100 text-sm font-medium mb-2">
-                Username
+                Email
               </label>
               <input
-                type="text"
-                name="username"
-                value={formData.username}
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
-                placeholder="Enter Username"
+                placeholder="Enter Email"
                 className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
                 required
               />
@@ -95,8 +95,8 @@ export default function Login() {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
-                  name="login_password"
-                  value={formData.login_password}
+                  name="password"
+                  value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter password"
                   className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"

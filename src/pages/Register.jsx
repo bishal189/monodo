@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { toast } from "react-toastify";
-import { User, Phone, Lock, Eye, EyeOff, Gift } from "lucide-react";
+import { User, Phone, Lock, Eye, EyeOff, Gift, Mail } from "lucide-react";
 import MomondoLogo from "../components/MomondoLogo";
 import apiClient, { storeTokens, storeUser } from "../services/apiClient";
 
@@ -11,6 +11,7 @@ export default function Register() {
   const [formData, setFormData] = useState({
     username: "",
     phone_number: "",
+    email: "",
     withdraw_password: "",
     confirm_withdraw_password: "",
     login_password: "",
@@ -22,6 +23,17 @@ export default function Register() {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showConfirmLoginPassword, setShowConfirmLoginPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({
+    login_password: "",
+    confirm_login_password: "",
+  });
+
+  const validatePassword = (password) => {
+    if (password.length < 8) {
+      return "Password must be at least 8 characters long";
+    }
+    return "";
+  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -29,10 +41,35 @@ export default function Register() {
       ...prev,
       [name]: value,
     }));
+
+    if (name === "login_password") {
+      setErrors((prev) => ({
+        ...prev,
+        login_password: validatePassword(value),
+        confirm_login_password: value !== formData.confirm_login_password && formData.confirm_login_password ? "Passwords do not match" : "",
+      }));
+    } else if (name === "confirm_login_password") {
+      setErrors((prev) => ({
+        ...prev,
+        confirm_login_password: value !== formData.login_password ? "Passwords do not match" : "",
+      }));
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+
+    const loginPasswordError = validatePassword(formData.login_password);
+
+    setErrors({
+      login_password: loginPasswordError,
+      confirm_login_password: formData.login_password !== formData.confirm_login_password ? "Passwords do not match" : "",
+    });
+
+    if (loginPasswordError) {
+      toast.error("Please fix password validation errors.");
+      return;
+    }
 
     if (formData.withdraw_password !== formData.confirm_withdraw_password) {
       toast.error("Withdraw passwords do not match.");
@@ -47,13 +84,22 @@ export default function Register() {
     setIsSubmitting(true);
 
     try {
+      const registrationData = {
+        username: formData.username,
+        phone_number: formData.phone_number,
+        email: formData.email,
+        login_password: formData.login_password,
+        confirm_login_password: formData.confirm_login_password,
+        withdraw_password: formData.withdraw_password,
+        confirm_withdraw_password: formData.confirm_withdraw_password,
+        invitation_code: formData.invitation_code,
+      };
 
-      const { data } = await apiClient.post("/register/", formData);
+      const { data } = await apiClient.post("/api/auth/register/", registrationData);
 
       toast.success(data?.message ?? "Registration successful!");
 
       if (data?.tokens) {
-
         storeTokens(data.tokens);
       }
 
@@ -64,6 +110,7 @@ export default function Register() {
       setFormData({
         username: "",
         phone_number: "",
+        email: "",
         withdraw_password: "",
         confirm_withdraw_password: "",
         login_password: "",
@@ -131,6 +178,27 @@ export default function Register() {
                   value={formData.phone_number}
                   onChange={handleChange}
                   placeholder="Enter Phone Number"
+                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Email Field */}
+            <div>
+              <label className="block text-purple-100 text-sm font-medium mb-2">
+                Email
+              </label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Mail className="h-5 w-5 text-purple-300" />
+                </div>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="Enter Email"
                   className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
                   required
                 />
@@ -216,7 +284,9 @@ export default function Register() {
                   value={formData.login_password}
                   onChange={handleChange}
                   placeholder="Enter Login password"
-                  className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border ${
+                    errors.login_password ? "border-red-400" : "border-white/20"
+                  } text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition`}
                   required
                 />
                 <button
@@ -231,6 +301,9 @@ export default function Register() {
                   )}
                 </button>
               </div>
+              {errors.login_password && (
+                <p className="mt-1 text-sm text-red-400">{errors.login_password}</p>
+              )}
             </div>
 
             {/* Confirm Login Password Field */}
@@ -248,7 +321,9 @@ export default function Register() {
                   value={formData.confirm_login_password}
                   onChange={handleChange}
                   placeholder="Confirm Login password"
-                  className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border ${
+                    errors.confirm_login_password ? "border-red-400" : "border-white/20"
+                  } text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition`}
                   required
                 />
                 <button
@@ -263,6 +338,9 @@ export default function Register() {
                   )}
                 </button>
               </div>
+              {errors.confirm_login_password && (
+                <p className="mt-1 text-sm text-red-400">{errors.confirm_login_password}</p>
+              )}
             </div>
 
             {/* Invitation Code Field */}

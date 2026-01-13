@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:8000/api/v1";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -14,7 +14,6 @@ const safeJsonParse = (value) => {
   try {
     return JSON.parse(value);
   } catch (error) {
-    console.warn("Unable to parse stored tokens.", error);
     return null;
   }
 };
@@ -27,10 +26,7 @@ export const getStoredTokens = () => {
 };
 
 export const storeTokens = (tokens) => {
-  if (typeof window === "undefined") {
-    return;
-  }
-  if (!tokens) {
+  if (typeof window === "undefined" || !tokens) {
     return;
   }
   localStorage.setItem("authTokens", JSON.stringify(tokens));
@@ -70,7 +66,7 @@ const refreshAccessToken = async () => {
     throw new Error("No refresh token available");
   }
 
-  const response = await axios.post(`${API_BASE_URL}/token/refresh/`, {
+  const response = await axios.post(`${API_BASE_URL}/api/auth/token/refresh/`, {
     refresh: storedTokens.refresh,
   });
 
