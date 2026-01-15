@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "react-toastify";
 import MomondoLogo from "./MomondoLogo";
-import apiClient, { clearAuthStorage, getStoredUser, storeUser } from "../services/apiClient";
+import apiClient, { logout, getStoredUser, storeUser } from "../services/apiClient";
 
 const navItems = [
   { path: "/records", label: "Records", icon: FileText },
@@ -40,7 +40,7 @@ export default function PrimaryNav() {
 
     const loadProfile = async () => {
       try {
-        const { data } = await apiClient.get("/profile/");
+        const { data } = await apiClient.get("/api/auth/profile/");
         if (!isMounted) return;
         if (data) {
           setStoredUser(data);
@@ -51,14 +51,14 @@ export default function PrimaryNav() {
       }
     };
 
-    if (!storedUser?.level?.display_name) {
+    if (!storedUser?.level?.level_name) {
       loadProfile();
     }
 
     return () => {
       isMounted = false;
     };
-  }, [storedUser?.level?.display_name]);
+  }, [storedUser?.level?.level_name]);
 
   useEffect(() => {
     const handleResize = () => {
@@ -79,10 +79,9 @@ export default function PrimaryNav() {
   };
 
   const handleLogout = () => {
-    clearAuthStorage();
     toast.success("Logged out.");
-    navigate("/login");
     setStoredUser(null);
+    logout();
   };
 
   const isActivePath = (path) => location.pathname.startsWith(path);
@@ -161,7 +160,7 @@ export default function PrimaryNav() {
           <p className="text-sm text-white/70">Logged in as</p>
           <p className="text-lg font-semibold">{username}</p>
           <p className="text-xs text-white/60">
-            Level: <span className="font-medium text-white">{storedUser?.level?.display_name ?? "N/A"}</span>
+            Level: <span className="font-medium text-white">{storedUser?.level?.level_name ?? "N/A"}</span>
           </p>
         </div>
         <nav className="flex flex-col gap-4 px-6 mt-6 text-white">

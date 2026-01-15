@@ -111,6 +111,7 @@ export default function Records() {
   const [selectedReviewId, setSelectedReviewId] = useState(null);
   const [userLevel, setUserLevel] = useState(null);
   const [userBalance, setUserBalance] = useState(0);
+  const [commissionRate, setCommissionRate] = useState(0);
   const [records, setRecords] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -121,30 +122,50 @@ export default function Records() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await apiClient.get("/records/images/");
+        const params = {};
+        if (activeFilter === "pending") {
+          params.review_status = "PENDING";
+        } else if (activeFilter === "completed") {
+          params.review_status = "COMPLETED";
+        }
+
+        const response = await apiClient.get("/api/product/reviews/", { params });
         const payload = response?.data ?? {};
-        setUserLevel(payload.user_level ?? null);
-        const balance = Number(payload.user_balance ?? 0);
-        setUserBalance(balance);
-        const minimumBalance = Number(payload?.user_level?.minimum_balance ?? 0);
-        const normalizedRecords = (payload.records ?? []).map((record) => {
-          const statusKey = record.status?.toLowerCase() ?? "pending";
-          const isBlockedByBalance =
-            statusKey === "pending" && minimumBalance > 0 && balance < minimumBalance;
+        
+        setCommissionRate(Number(payload.commission_rate ?? 0));
+        if (payload.level) {
+          setUserLevel({
+            id: payload.level.id,
+            level_name: payload.level.level_name,
+            commission_rate: payload.level.commission_rate,
+            status: payload.level.status,
+            display_name: payload.level.level_name,
+          });
+        }
+        
+        const normalizedRecords = (payload.products ?? []).map((product) => {
+          const reviewStatus = product.review_status?.toUpperCase() ?? "PENDING";
+          const statusKey = reviewStatus === "COMPLETED" ? "completed" : "pending";
+          const potentialCommission = Number(product.potential_commission ?? 0);
+          
           return {
-            ...record,
+            id: product.id,
+            title: product.title ?? "N/A",
+            price: product.price ?? 0,
+            commission: potentialCommission,
+            total_value: product.price ?? 0,
+            status: reviewStatus,
             statusKey,
-            isBlockedByBalance,
-            priceDisplay: formatCurrency(record.price),
-            commissionDisplay: formatCurrency(record.commission),
-            totalValueDisplay: formatCurrency(record.total_value ?? record.totalValue),
-            imageUrl: record.image_url || record.imageUrl,
-            timestampDisplay: formatTimestamp(record.updated_at ?? record.created_at),
+            priceDisplay: formatCurrency(product.price),
+            commissionDisplay: formatCurrency(potentialCommission),
+            totalValueDisplay: formatCurrency(product.price ?? 0),
+            imageUrl: product.image_url || "",
+            timestampDisplay: formatTimestamp(product.created_at),
           };
         });
         setRecords(normalizedRecords);
       } catch (err) {
-        console.error("Failed to fetch record images", err);
+        console.error("Failed to fetch product reviews", err);
         setError("Unable to load records at the moment. Please try again shortly.");
       } finally {
         setIsLoading(false);
@@ -156,28 +177,14 @@ export default function Records() {
 
   const filteredRecords = useMemo(() => {
     if (activeFilter === "all") {
-      return records.filter((record) => !(record.statusKey === "pending" && record.isBlockedByBalance));
+      return records;
     }
-    return records.filter((record) => {
-      if (record.statusKey !== activeFilter) {
-        return false;
-      }
-      if (record.statusKey === "pending" && record.isBlockedByBalance) {
-        return false;
-      }
-      return true;
-    });
+    return records.filter((record) => record.statusKey === activeFilter);
   }, [activeFilter, records]);
-
-  const blockedPendingCount = useMemo(
-    () => records.filter((record) => record.statusKey === "pending" && record.isBlockedByBalance).length,
-    [records]
-  );
 
   const openReviewModal = (record) => {
     setReviewingRecord(record);
-    const firstReviewId = record?.reviews?.[0]?.id ?? null;
-    setSelectedReviewId(firstReviewId);
+    setSelectedReviewId(null);
   };
 
   const closeReviewModal = () => {
@@ -196,7 +203,6 @@ export default function Records() {
         review_id: selectedReviewId,
       });
 
-      // Handle insufficient balance error
       if (data.error === 'insufficient_balance') {
         const message = data.detail || `Balance not sufficient. You need $${data.required_amount || '0.00'} but you have $${data.current_balance || '0.00'}. Please deposit $${data.insufficient_amount || '0.00'} to proceed.`;
         toast.error(message, {
@@ -211,7 +217,6 @@ export default function Records() {
         return;
       }
 
-      // Update user stats if provided
       if (data.user_stats) {
         const stats = data.user_stats;
         if (stats.balance !== undefined) {
@@ -219,33 +224,51 @@ export default function Records() {
         }
       }
 
-      // Refresh records to get updated data
       try {
-        const response = await apiClient.get("/records/images/");
+        const params = {};
+        if (activeFilter === "pending") {
+          params.review_status = "PENDING";
+        } else if (activeFilter === "completed") {
+          params.review_status = "COMPLETED";
+        }
+
+        const response = await apiClient.get("/api/product/reviews/", { params });
         const payload = response?.data ?? {};
-        const updatedBalance = Number(payload?.user_balance ?? userBalance);
-        setUserBalance(updatedBalance);
         
-        const normalizedRecords = (payload.records ?? []).map((record) => {
-          const statusKey = record.status?.toLowerCase() ?? "pending";
-          const minimumBalance = Number(payload?.user_level?.minimum_balance ?? 0);
-          const isBlockedByBalance =
-            statusKey === "pending" && minimumBalance > 0 && updatedBalance < minimumBalance;
+        setCommissionRate(Number(payload.commission_rate ?? 0));
+        if (payload.level) {
+          setUserLevel({
+            id: payload.level.id,
+            level_name: payload.level.level_name,
+            commission_rate: payload.level.commission_rate,
+            status: payload.level.status,
+            display_name: payload.level.level_name,
+          });
+        }
+        
+        const normalizedRecords = (payload.products ?? []).map((product) => {
+          const reviewStatus = product.review_status?.toUpperCase() ?? "PENDING";
+          const statusKey = reviewStatus === "COMPLETED" ? "completed" : "pending";
+          const potentialCommission = Number(product.potential_commission ?? 0);
+          
           return {
-            ...record,
+            id: product.id,
+            title: product.title ?? "N/A",
+            price: product.price ?? 0,
+            commission: potentialCommission,
+            total_value: product.price ?? 0,
+            status: reviewStatus,
             statusKey,
-            isBlockedByBalance,
-            priceDisplay: formatCurrency(record.price),
-            commissionDisplay: formatCurrency(record.commission),
-            totalValueDisplay: formatCurrency(record.total_value ?? record.totalValue),
-            imageUrl: record.image_url || record.imageUrl,
-            timestampDisplay: formatTimestamp(record.updated_at ?? record.created_at),
+            priceDisplay: formatCurrency(product.price),
+            commissionDisplay: formatCurrency(potentialCommission),
+            totalValueDisplay: formatCurrency(product.price ?? 0),
+            imageUrl: product.image_url || "",
+            timestampDisplay: formatTimestamp(product.created_at),
           };
         });
         setRecords(normalizedRecords);
       } catch (refreshErr) {
         console.error("Failed to refresh records", refreshErr);
-        // Update records manually - mark the submitted record as completed
         setRecords((prev) => prev.map((item) => 
           item.id === reviewingRecord.id 
             ? { ...item, statusKey: 'completed', status: 'COMPLETED' }
@@ -259,7 +282,6 @@ export default function Records() {
       console.error("Failed to submit review", err);
       const errorData = err?.response?.data || {};
       
-      // Handle insufficient balance error
       if (errorData.error === 'insufficient_balance') {
         const message = errorData.detail || `Balance not sufficient. You need $${errorData.required_amount || '0.00'} but you have $${errorData.current_balance || '0.00'}. Please deposit $${errorData.insufficient_amount || '0.00'} to proceed.`;
         toast.error(message, {
@@ -291,6 +313,11 @@ export default function Records() {
               {userLevel && (
                 <p className="text-xs text-purple-200 mt-1">
                   Level: <span className="font-semibold text-white">{userLevel.display_name}</span>
+                  {commissionRate > 0 && (
+                    <span className="ml-2">
+                      • Commission: <span className="font-semibold text-white">{commissionRate}%</span>
+                    </span>
+                  )}
                 </p>
               )}
             </div>
@@ -308,18 +335,6 @@ export default function Records() {
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-100 rounded-3xl p-4 text-sm">
               {error}
-            </div>
-          )}
-
-          {blockedPendingCount > 0 && (
-            <div className="bg-amber-500/10 border border-amber-500/30 text-amber-100 rounded-3xl p-4 text-sm">
-              Balance not sufficient to access {blockedPendingCount} pending record{blockedPendingCount > 1 ? "s" : ""}.
-              {userLevel?.minimum_balance && (
-                <span className="block mt-1">
-                  Minimum required: <span className="font-semibold text-white">{formatCurrency(userLevel.minimum_balance)}</span>
-                  , current balance: <span className="font-semibold text-white">{formatCurrency(userBalance)}</span>.
-                </span>
-              )}
             </div>
           )}
 
@@ -403,15 +418,7 @@ export default function Records() {
                       <option value="" disabled>
                         Choose a review...
                       </option>
-                      {(reviewingRecord?.reviews ?? []).map((review) => (
-                        <option key={review.id} value={review.id}>
-                          {review.review_text}
-                        </option>
-                      ))}
                     </select>
-                    {(reviewingRecord?.reviews ?? []).length === 0 && (
-                      <p className="text-sm text-[#6B7280] text-center py-2">No reviews available.</p>
-                    )}
                   </div>
 
                   <div className="pt-2">

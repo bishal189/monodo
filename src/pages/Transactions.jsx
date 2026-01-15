@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Clock, CheckCircle, XCircle, Loader2, ArrowDownCircle, ArrowUpCircle, Filter, MessageCircle } from "lucide-react";
+import { Clock, CheckCircle, XCircle, Loader2, ArrowDownCircle, ArrowUpCircle, Filter } from "lucide-react";
 import { toast } from "react-toastify";
 import PrimaryNav from "../components/PrimaryNav";
 import Footer from "./footer";
@@ -66,17 +66,23 @@ const formatTimestamp = (value) => {
   if (Number.isNaN(date.getTime())) {
     return value;
   }
-  return date.toLocaleString("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  });
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const year = date.getFullYear();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  const displayMinutes = minutes.toString().padStart(2, '0');
+  return `${month}/${day}/${year} ${displayHours}:${displayMinutes} ${ampm}`;
 };
 
-function TransactionCard({ transaction, onChatClick }) {
+function TransactionCard({ transaction }) {
   const meta = statusMeta[transaction.status] || statusMeta.PENDING;
   const Icon = meta?.icon ?? Clock;
-  const typeIcon = transaction.transaction_type === "DEPOSIT" ? ArrowUpCircle : ArrowDownCircle;
-  const typeColor = transaction.transaction_type === "DEPOSIT" ? "text-green-400" : "text-pink-400";
+  const transactionType = transaction.type || transaction.transaction_type;
+  const typeIcon = transactionType === "DEPOSIT" ? ArrowUpCircle : ArrowDownCircle;
+  const typeColor = transactionType === "DEPOSIT" ? "text-green-400" : "text-pink-400";
   const isPending = transaction.status === "PENDING" || transaction.status === "APPROVED";
 
   return (
@@ -93,11 +99,16 @@ function TransactionCard({ transaction, onChatClick }) {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-base font-semibold text-white">
-                {transaction.transaction_type === "DEPOSIT" ? "Deposit" : "Withdrawal"}
+                {transactionType === "DEPOSIT" ? "Deposit" : "Withdrawal"}
               </h3>
               <p className="text-xs text-purple-200 mt-0.5">
                 {formatTimestamp(transaction.created_at)}
               </p>
+              {transaction.transaction_id && (
+                <p className="text-xs text-purple-300 mt-0.5">
+                  ID: {transaction.transaction_id}
+                </p>
+              )}
             </div>
           </div>
           <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold border ${meta.labelClass}`}>
@@ -109,51 +120,23 @@ function TransactionCard({ transaction, onChatClick }) {
         <div className="border-t border-dashed border-white/20 pt-3 space-y-2 text-sm">
           <div className="flex items-center justify-between">
             <span className="text-purple-200">Amount</span>
-            <span className={`font-bold text-lg ${transaction.transaction_type === "DEPOSIT" ? "text-green-400" : "text-pink-400"}`}>
-              {transaction.transaction_type === "DEPOSIT" ? "+" : "-"}{formatCurrency(transaction.amount)}
+            <span className={`font-bold text-lg ${transactionType === "DEPOSIT" ? "text-green-400" : "text-pink-400"}`}>
+              {transactionType === "DEPOSIT" ? "+" : "-"}{formatCurrency(transaction.amount)}
             </span>
           </div>
 
-          {transaction.transaction_type === "WITHDRAW" && transaction.account_holder_name && (
-            <>
-              <div className="flex items-center justify-between">
-                <span className="text-purple-200">Account</span>
-                <span className="font-semibold text-white">
-                  ****{transaction.account_number?.slice(-4) || "****"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-purple-200">Bank</span>
-                <span className="font-semibold text-white">{transaction.bank_name}</span>
-              </div>
-            </>
-          )}
-
-          {transaction.processed_at && (
+          {transaction.remark_type && (
             <div className="flex items-center justify-between">
-              <span className="text-purple-200">Processed</span>
+              <span className="text-purple-200">Type</span>
               <span className="font-semibold text-white text-xs">
-                {formatTimestamp(transaction.processed_at)}
+                {transaction.remark_type}
               </span>
             </div>
           )}
 
-          {transaction.notes && (
+          {transaction.remark && (
             <div className="mt-2 pt-2 border-t border-white/10">
-              <p className="text-xs text-purple-300">{transaction.notes}</p>
-            </div>
-          )}
-
-          {isPending && (
-            <div className="mt-3 pt-3 border-t border-white/10">
-              <button
-                type="button"
-                onClick={() => onChatClick && onChatClick()}
-                className="w-full bg-gradient-to-r from-pink-500/20 to-rose-500/20 hover:from-pink-500/30 hover:to-rose-500/30 border border-pink-500/30 text-pink-200 hover:text-pink-100 font-semibold py-2 rounded-full transition shadow-md shadow-pink-500/20 flex items-center justify-center gap-2 text-xs"
-              >
-                <MessageCircle className="h-3.5 w-3.5" />
-                Chat with Admin
-              </button>
+              <p className="text-xs text-purple-300">{transaction.remark}</p>
             </div>
           )}
         </div>
@@ -164,34 +147,23 @@ function TransactionCard({ transaction, onChatClick }) {
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
+  const [currentBalance, setCurrentBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeStatusFilter, setActiveStatusFilter] = useState("all");
   const [activeTypeFilter, setActiveTypeFilter] = useState("all");
-
-  const openLiveChat = () => {
-    if (typeof window !== 'undefined' && window.LiveChatWidget) {
-      try {
-        window.LiveChatWidget.call('maximize');
-      } catch (error) {
-        console.error('Failed to open LiveChat', error);
-        // Fallback: try alternative methods
-        if (window.LiveChatWidget.onReady) {
-          window.LiveChatWidget.onReady(() => {
-            window.LiveChatWidget.call('maximize');
-          });
-        }
-      }
-    }
-  };
 
   useEffect(() => {
     const fetchTransactions = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const { data } = await apiClient.get("/transactions/");
+        const { data } = await apiClient.get("/api/transaction/my-transactions/");
+        console.log("Transactions data:", data);
         setTransactions(data?.transactions || []);
+        if (data?.current_balance !== undefined) {
+          setCurrentBalance(Number(data.current_balance));
+        }
       } catch (err) {
         console.error("Failed to fetch transactions", err);
         setError("Unable to load transactions at the moment. Please try again shortly.");
@@ -205,7 +177,6 @@ export default function Transactions() {
   }, []);
 
   const filteredTransactions = transactions.filter((transaction) => {
-    // Status filter
     if (activeStatusFilter !== "all") {
       const statusKey = transaction.status?.toLowerCase();
       if (statusKey !== activeStatusFilter.toLowerCase()) {
@@ -213,10 +184,13 @@ export default function Transactions() {
       }
     }
 
-    // Type filter
     if (activeTypeFilter !== "all") {
-      const typeKey = transaction.transaction_type?.toLowerCase();
-      if (typeKey !== activeTypeFilter) {
+      const transactionType = transaction.type || transaction.transaction_type;
+      const typeKey = transactionType?.toLowerCase();
+      if (activeTypeFilter === "deposit" && typeKey !== "deposit") {
+        return false;
+      }
+      if (activeTypeFilter === "withdraw" && typeKey !== "withdrawal") {
         return false;
       }
     }
@@ -232,20 +206,6 @@ export default function Transactions() {
       <PrimaryNav />
       <div className="px-4 py-6">
         <div className="max-w-3xl mx-auto space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between bg-white/10 border border-white/15 rounded-2xl px-4 py-3 shadow-inner shadow-black/10">
-            <div>
-              <p className="text-xs uppercase tracking-wide text-purple-200">Transaction History</p>
-              <p className="text-base font-semibold text-white mt-1">All Transactions</p>
-            </div>
-            {pendingCount > 0 && (
-              <div className="bg-yellow-500/20 border border-yellow-500/30 text-yellow-200 px-4 py-2 rounded-full text-sm font-semibold">
-                {pendingCount} Pending
-              </div>
-            )}
-          </div>
-
-          {/* Pending Transactions Alert */}
           {pendingCount > 0 && (
             <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-100 rounded-2xl p-4 text-sm">
               <div className="flex items-start gap-3">
@@ -254,25 +214,16 @@ export default function Transactions() {
                   <p className="font-semibold text-yellow-200 mb-1">
                     You have {pendingCount} pending transaction{pendingCount > 1 ? "s" : ""}
                   </p>
-                  <p className="text-yellow-100/80 text-xs mb-3">
+                  <p className="text-yellow-100/80 text-xs">
                     {pendingCount === 1
                       ? "This transaction is awaiting admin approval."
                       : "These transactions are awaiting admin approval."}
                   </p>
-                  <button
-                    type="button"
-                    onClick={openLiveChat}
-                    className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-2 px-4 rounded-full transition shadow-md shadow-pink-500/30 flex items-center justify-center gap-2 text-xs"
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    Chat with Admin for Faster Processing
-                  </button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* Filters */}
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm text-purple-200">
               <Filter className="h-4 w-4" />
@@ -309,7 +260,17 @@ export default function Transactions() {
                   const isActive = activeTypeFilter === filter.key;
                   const count = filter.key === "all"
                     ? transactions.length
-                    : transactions.filter((t) => t.transaction_type?.toLowerCase() === filter.key).length;
+                    : transactions.filter((t) => {
+                        const transactionType = t.type || t.transaction_type;
+                        const typeKey = transactionType?.toLowerCase();
+                        if (filter.key === "deposit") {
+                          return typeKey === "deposit";
+                        }
+                        if (filter.key === "withdraw") {
+                          return typeKey === "withdrawal";
+                        }
+                        return false;
+                      }).length;
                   
                   return (
                     <button
@@ -330,7 +291,6 @@ export default function Transactions() {
             </div>
           </div>
 
-          {/* Loading State */}
           {isLoading && (
             <div className="bg-white/10 border border-white/15 rounded-3xl p-8 text-center">
               <Loader2 className="h-8 w-8 animate-spin text-purple-300 mx-auto mb-3" />
@@ -338,22 +298,19 @@ export default function Transactions() {
             </div>
           )}
 
-          {/* Error State */}
           {error && !isLoading && (
             <div className="bg-red-500/10 border border-red-500/30 text-red-100 rounded-2xl p-4 text-sm">
               {error}
             </div>
           )}
 
-          {/* Transactions List */}
           {!isLoading && !error && (
             <div className="flex flex-col gap-4 pb-12">
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.map((transaction) => (
                   <TransactionCard 
                     key={transaction.id} 
-                    transaction={transaction} 
-                    onChatClick={openLiveChat}
+                    transaction={transaction}
                   />
                 ))
               ) : (

@@ -24,8 +24,14 @@ export default function Register() {
   const [showConfirmLoginPassword, setShowConfirmLoginPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({
+    username: "",
+    phone_number: "",
+    email: "",
+    withdraw_password: "",
+    confirm_withdraw_password: "",
     login_password: "",
     confirm_login_password: "",
+    invitation_code: "",
   });
 
   const validatePassword = (password) => {
@@ -52,6 +58,11 @@ export default function Register() {
       setErrors((prev) => ({
         ...prev,
         confirm_login_password: value !== formData.login_password ? "Passwords do not match" : "",
+      }));
+    } else {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
       }));
     }
   };
@@ -118,13 +129,48 @@ export default function Register() {
         invitation_code: "",
       });
 
+      setErrors({
+        username: "",
+        phone_number: "",
+        email: "",
+        withdraw_password: "",
+        confirm_withdraw_password: "",
+        login_password: "",
+        confirm_login_password: "",
+        invitation_code: "",
+      });
+
       setTimeout(() => navigate("/login"), 1200);
     } catch (error) {
-      const errorMessage =
-        error?.response?.data?.message ||
-        error?.response?.data?.detail ||
-        "Unable to register. Please try again.";
-      toast.error(errorMessage);
+      const errorData = error?.response?.data || {};
+      
+      if (errorData.errors) {
+        const apiErrors = {};
+        
+        Object.keys(errorData.errors).forEach((field) => {
+          const fieldError = errorData.errors[field];
+          if (Array.isArray(fieldError)) {
+            apiErrors[field] = fieldError.join(", ");
+          } else {
+            apiErrors[field] = fieldError;
+          }
+        });
+        
+        setErrors((prev) => ({
+          ...prev,
+          ...apiErrors,
+        }));
+        
+        if (errorData.message) {
+          toast.error(errorData.message);
+        }
+      } else {
+        const errorMessage =
+          errorData.message ||
+          errorData.detail ||
+          "Unable to register. Please try again.";
+        toast.error(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -157,10 +203,15 @@ export default function Register() {
                   value={formData.username}
                   onChange={handleChange}
                   placeholder="Enter Username"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border ${
+                    errors.username ? "border-red-400" : "border-white/20"
+                  } text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition`}
                   required
                 />
               </div>
+              {errors.username && (
+                <p className="mt-1 text-sm text-red-400">{errors.username}</p>
+              )}
             </div>
 
             {/* Phone Number Field */}
@@ -178,10 +229,15 @@ export default function Register() {
                   value={formData.phone_number}
                   onChange={handleChange}
                   placeholder="Enter Phone Number"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border ${
+                    errors.phone_number ? "border-red-400" : "border-white/20"
+                  } text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition`}
                   required
                 />
               </div>
+              {errors.phone_number && (
+                <p className="mt-1 text-sm text-red-400">{errors.phone_number}</p>
+              )}
             </div>
 
             {/* Email Field */}
@@ -199,10 +255,15 @@ export default function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter Email"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border ${
+                    errors.email ? "border-red-400" : "border-white/20"
+                  } text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition`}
                   required
                 />
               </div>
+              {errors.email && (
+                <p className="mt-1 text-sm text-red-400">{errors.email}</p>
+              )}
             </div>
 
             {/* Withdraw Password Field */}
@@ -220,7 +281,9 @@ export default function Register() {
                   value={formData.withdraw_password}
                   onChange={handleChange}
                   placeholder="Enter Withdraw password"
-                  className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border ${
+                    errors.withdraw_password ? "border-red-400" : "border-white/20"
+                  } text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition`}
                   required
                 />
                 <button
@@ -235,6 +298,9 @@ export default function Register() {
                   )}
                 </button>
               </div>
+              {errors.withdraw_password && (
+                <p className="mt-1 text-sm text-red-400">{errors.withdraw_password}</p>
+              )}
             </div>
 
             {/* Confirm Withdraw Password Field */}
@@ -252,7 +318,9 @@ export default function Register() {
                   value={formData.confirm_withdraw_password}
                   onChange={handleChange}
                   placeholder="Confirm Withdraw password"
-                  className="w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-12 py-3 rounded-lg bg-white/10 border ${
+                    errors.confirm_withdraw_password ? "border-red-400" : "border-white/20"
+                  } text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition`}
                   required
                 />
                 <button
@@ -267,6 +335,9 @@ export default function Register() {
                   )}
                 </button>
               </div>
+              {errors.confirm_withdraw_password && (
+                <p className="mt-1 text-sm text-red-400">{errors.confirm_withdraw_password}</p>
+              )}
             </div>
 
             {/* Login Password Field */}
@@ -358,9 +429,14 @@ export default function Register() {
                   value={formData.invitation_code}
                   onChange={handleChange}
                   placeholder="Enter Invitation code"
-                  className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                  className={`w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border ${
+                    errors.invitation_code ? "border-red-400" : "border-white/20"
+                  } text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition`}
                 />
               </div>
+              {errors.invitation_code && (
+                <p className="mt-1 text-sm text-red-400">{errors.invitation_code}</p>
+              )}
             </div>
 
             <button

@@ -12,20 +12,20 @@ export default function Invite() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchProfile = async () => {
+    const fetchInviteData = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await apiClient.get("/profile/");
-        const profile = response?.data ?? {};
-        setProfile(profile);
-        setReferralCode(profile.referral_code ?? "");
-        if (profile) {
-          storeUser(profile);
+        const response = await apiClient.get("/api/auth/invite/");
+        const inviteData = response?.data ?? {};
+        setProfile(inviteData);
+        setReferralCode(inviteData.invitation_code ?? "");
+        if (inviteData) {
+          storeUser(inviteData);
         }
       } catch (err) {
-        console.error("Failed to load profile", err);
-        setError("Unable to fetch your referral code. Please try again later.");
+        console.error("Failed to load invite data", err);
+        setError("Unable to fetch your invitation code. Please try again later.");
         setReferralCode("");
         setProfile(null);
       } finally {
@@ -33,18 +33,18 @@ export default function Invite() {
       }
     };
 
-    fetchProfile();
+    fetchInviteData();
   }, []);
 
   const handleCopy = async () => {
     if (!referralCode) {
-      toast.error("Referral code not available yet.");
+      toast.error("Invitation code not available yet.");
       return;
     }
 
     try {
       await navigator.clipboard.writeText(referralCode);
-      toast.success("Referral code copied!");
+      toast.success("Invitation code copied!");
     } catch (error) {
       toast.error("Unable to copy. Please try manually.");
     }
@@ -52,11 +52,11 @@ export default function Invite() {
 
   const handleShare = async () => {
     if (!referralCode) {
-      toast.error("Referral code not available yet.");
+      toast.error("Invitation code not available yet.");
       return;
     }
 
-    const shareMessage = `Join me on Momondo! Use referral code ${referralCode} to get started.`;
+    const shareMessage = `Join me on Momondo! Use invitation code ${referralCode} to get started.`;
 
     if (navigator.share) {
       try {
@@ -114,22 +114,30 @@ export default function Invite() {
               </div>
 
               {profile && (
-                <div className="mx-auto max-w-sm bg-white/10 border border-white/15 rounded-2xl px-4 py-3 shadow-inner space-y-1 text-sm">
+                <div className="mx-auto max-w-sm bg-white/10 border border-white/15 rounded-2xl px-4 py-3 shadow-inner space-y-2 text-sm">
                   <div className="flex items-center justify-between text-white/90">
                     <span className="uppercase tracking-wide text-xs text-purple-200">Signed in as</span>
                     <span className="font-semibold text-white">{profile.username}</span>
                   </div>
-                  <div className="flex items-center justify-between text-white/90">
-                    <span className="uppercase tracking-wide text-xs text-purple-200">Level</span>
-                    <span className="font-semibold text-pink-200">
-                      {profile.level?.display_name ?? "Not Assigned"}
-                    </span>
-                  </div>
+                  {profile.email && (
+                    <div className="flex items-center justify-between text-white/90">
+                      <span className="uppercase tracking-wide text-xs text-purple-200">Email</span>
+                      <span className="font-semibold text-white text-xs truncate ml-2">{profile.email}</span>
+                    </div>
+                  )}
+                  {profile.level?.level_name && (
+                    <div className="flex items-center justify-between text-white/90">
+                      <span className="uppercase tracking-wide text-xs text-purple-200">Level</span>
+                      <span className="font-semibold text-pink-200">
+                        {profile.level.level_name}
+                      </span>
+                    </div>
+                  )}
                 </div>
               )}
 
               {isLoading && (
-                <p className="text-sm text-purple-200">Loading your referral code...</p>
+                <p className="text-sm text-purple-200">Loading your invitation code...</p>
               )}
 
               {error && !isLoading && (

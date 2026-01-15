@@ -50,7 +50,7 @@ export default function Withdraw() {
     const fetchUserData = async () => {
       setIsFetchingBalance(true);
       try {
-        const { data: profileData } = await apiClient.get("/profile/");
+        const { data: profileData } = await apiClient.get("/api/auth/profile/");
         if (profileData?.balance !== undefined) {
           setAccountBalance(Number(profileData.balance) || 0);
         }
