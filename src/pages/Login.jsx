@@ -4,7 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import MomondoLogo from "../components/MomondoLogo";
-import apiClient, { storeTokens } from "../services/apiClient";
+import apiClient, { storeTokens, storeUser } from "../services/apiClient";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -14,6 +14,7 @@ export default function Login() {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -21,23 +22,44 @@ export default function Login() {
       ...prev,
       [name]: value,
     }));
+    if (errorMessage) {
+      setErrorMessage("");
+    }
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage("");
 
     try {
       const { data } = await apiClient.post("/api/auth/login/", formData);
       
       if (data?.refresh && data?.access) {
+        if (data?.user) {
+          const user = data.user;
+          const isNormalUser = user.role === "USER" || user.is_normal_user === true;
+          
+          if (!isNormalUser) {
+            setErrorMessage("Access denied. Only normal users can login.");
+            toast.error("Access denied. Only normal users can login.");
+            setIsSubmitting(false);
+            return;
+          }
+          
+          storeUser(user);
+        }
+        
         storeTokens({
           refresh: data.refresh,
           access: data.access,
         });
         toast.success("Login successful!");
       } else {
-        toast.error("Invalid response from server.");
+        const errorMsg = "Invalid response from server.";
+        setErrorMessage(errorMsg);
+        toast.error(errorMsg);
+        setIsSubmitting(false);
         return;
       }
 
@@ -48,11 +70,12 @@ export default function Login() {
 
       setTimeout(() => navigate("/home"), 800);
     } catch (error) {
-      const errorMessage =
+      const errorMsg =
         error?.response?.data?.message ||
         error?.response?.data?.detail ||
-        "Unable to login. Please try again.";
-      toast.error(errorMessage);
+        "Access denied. Only normal users can login.";
+      setErrorMessage(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setIsSubmitting(false);
     }
@@ -67,7 +90,13 @@ export default function Login() {
 
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 shadow-2xl border border-white/20">
           <h2 className="text-3xl font-bold text-white mb-2">Welcome back</h2>
-          <p className="text-purple-200 mb-6">Sign in to your account</p>
+          <p className="text-purple-200 mb-6">Sign in to your account to continue</p>
+
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded-lg bg-red-100/90 border-2 border-red-400">
+              <p className="text-red-800 text-sm font-medium">{errorMessage}</p>
+            </div>
+          )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             <div>
