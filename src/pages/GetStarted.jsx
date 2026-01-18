@@ -190,7 +190,7 @@ export default function GetStarted() {
                 <p className="text-xl font-semibold mt-1">{formatCurrency(recordsSummary.total_balance ?? 0)}</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
-                <p className="text-xs uppercase tracking-wide text-purple-200">Today's Commission</p>
+                <p className="text-xs uppercase tracking-wide text-purple-200">Level's Commission</p>
                 <p className="text-xl font-semibold mt-1">{commissionRate}%</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
@@ -230,7 +230,10 @@ export default function GetStarted() {
                     
                     <div className="p-5 space-y-4">
                       <div>
-                        <h3 className="text-white font-bold text-lg mb-3">{currentProduct.title ?? "N/A"}</h3>
+                        <h3 className="text-white font-bold text-lg mb-2">{currentProduct.title ?? "N/A"}</h3>
+                        {currentProduct.description && (
+                          <p className="text-purple-200 text-sm mb-3">{currentProduct.description}</p>
+                        )}
                         <div className="flex items-center justify-between">
                           <div>
                             <p className="text-pink-300 text-xl font-bold">{formatCurrency(currentProduct.price ?? 0)}</p>
