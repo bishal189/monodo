@@ -59,7 +59,7 @@ export default function Deposit() {
       }
       setAmount("100");
       setRemark("");
-      toast.success(`Successfully deposited ${formatCurrency(depositAmount)}`);
+      toast.success(`Deposit request of ${formatCurrency(depositAmount)} submitted successfully. Please wait for admin approval.`);
     } catch (error) {
       console.error("Deposit failed", error);
       const errorMessage =
