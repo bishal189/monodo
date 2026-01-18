@@ -11,6 +11,7 @@ const statusFilters = [
   { key: "approved", label: "Approved" },
   { key: "completed", label: "Completed" },
   { key: "rejected", label: "Rejected" },
+  { key: "failed", label: "Failed" },
 ];
 
 const typeFilters = [
@@ -43,6 +44,12 @@ const statusMeta = {
     labelClass: "bg-red-500/20 text-red-200 border-red-500/30",
     iconClass: "text-red-300",
     label: "Rejected",
+  },
+  FAILED: {
+    icon: XCircle,
+    labelClass: "bg-red-500/20 text-red-200 border-red-500/30",
+    iconClass: "text-red-300",
+    label: "Failed",
   },
 };
 
@@ -83,7 +90,6 @@ function TransactionCard({ transaction }) {
   const transactionType = transaction.type || transaction.transaction_type;
   const typeIcon = transactionType === "DEPOSIT" ? ArrowUpCircle : ArrowDownCircle;
   const typeColor = transactionType === "DEPOSIT" ? "text-green-400" : "text-pink-400";
-  const isPending = transaction.status === "PENDING" || transaction.status === "APPROVED";
 
   return (
     <div className="bg-white/10 border border-white/15 rounded-2xl overflow-hidden shadow-lg shadow-black/20">
@@ -147,7 +153,6 @@ function TransactionCard({ transaction }) {
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
-  const [currentBalance, setCurrentBalance] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeStatusFilter, setActiveStatusFilter] = useState("all");
@@ -160,9 +165,6 @@ export default function Transactions() {
       try {
         const { data } = await apiClient.get("/api/transaction/my-transactions/");
         setTransactions(data?.transactions || []);
-        if (data?.current_balance !== undefined) {
-          setCurrentBalance(Number(data.current_balance));
-        }
       } catch (err) {
         setError("Unable to load transactions at the moment. Please try again shortly.");
         toast.error("Failed to load transactions");
