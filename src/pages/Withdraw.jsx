@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowDownCircle, DollarSign, MessageCircle, Check, Lock, Eye, EyeOff, CreditCard, Loader2, Edit2 } from "lucide-react";
+import { ArrowDownCircle, DollarSign, MessageCircle, Lock, Eye, EyeOff, CreditCard, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import PrimaryNav from "../components/PrimaryNav";
 import Footer from "./footer";
@@ -16,7 +16,6 @@ export default function Withdraw() {
   const [amount, setAmount] = useState("");
   const [withdrawPassword, setWithdrawPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingBalance, setIsFetchingBalance] = useState(true);
   const [savedAccount, setSavedAccount] = useState(null);
@@ -35,8 +34,6 @@ export default function Withdraw() {
       try {
         window.LiveChatWidget.call('maximize');
       } catch (error) {
-        console.error('Failed to open LiveChat', error);
-        // Fallback: try alternative methods
         if (window.LiveChatWidget.onReady) {
           window.LiveChatWidget.onReady(() => {
             window.LiveChatWidget.call('maximize');
@@ -61,27 +58,27 @@ export default function Withdraw() {
           setMaximumWithdraw(Number(profileData.level.max_withdraw_amount) || 0);
         }
 
-        // Load saved bank account details
-        if (profileData?.bank_account) {
-          setSavedAccount(profileData.bank_account);
-          setShowAccountForm(false);
-        } else {
+        try {
+          const { data: accountData } = await apiClient.get("/api/transaction/withdrawal-accounts/check/");
+          if (accountData?.has_account && accountData?.primary_account) {
+            const primaryAccount = accountData.primary_account;
+            setSavedAccount({
+              id: primaryAccount.id,
+              account_holder_name: primaryAccount.account_holder_name,
+              bank_name: primaryAccount.bank_name,
+              account_number: primaryAccount.account_number || "",
+              masked_account_number: primaryAccount.masked_account_number,
+              account_type: primaryAccount.account_type,
+              routing_number: primaryAccount.routing_number || "",
+            });
+            setShowAccountForm(false);
+          } else {
+            setShowAccountForm(true);
+          }
+        } catch (err) {
           setShowAccountForm(true);
         }
-
-        // Fetch pending withdrawals
-        try {
-          const { data: transactionsData } = await apiClient.get("/transactions/?type=withdraw");
-          const pendingList = (transactionsData?.transactions || [])
-            .filter(t => t.status === "PENDING" || t.status === "APPROVED");
-          const pending = pendingList.reduce((sum, t) => sum + Number(t.amount || 0), 0);
-          setPendingWithdrawals(pending);
-          setPendingWithdrawCount(pendingList.length);
-        } catch (err) {
-          console.error("Failed to fetch pending withdrawals", err);
-        }
       } catch (error) {
-        console.error("Failed to fetch user data", error);
         toast.error("Failed to load account information");
       } finally {
         setIsFetchingBalance(false);
@@ -110,40 +107,29 @@ export default function Withdraw() {
 
     setIsSavingAccount(true);
     try {
-      const { data } = await apiClient.post("/bank-account/save/", {
-        account_number: accountForm.accountNumber,
+      const accountTypeUpper = accountForm.accountType?.toUpperCase() || "CHECKING";
+      
+      const { data } = await apiClient.post("/api/transaction/withdrawal-accounts/", {
         account_holder_name: accountForm.accountHolderName,
         bank_name: accountForm.bankName,
+        account_number: accountForm.accountNumber,
         routing_number: accountForm.routingNumber || "",
-        account_type: accountForm.accountType || "checking",
+        account_type: accountTypeUpper,
+        is_primary: true,
       });
 
       toast.success(data.message || "Account details saved successfully");
-      setSavedAccount(data.bank_account);
+      setSavedAccount(data.bank_account || data);
       setShowAccountForm(false);
     } catch (error) {
-      console.error("Failed to save account", error);
       const errorMessage =
         error?.response?.data?.error ||
         error?.response?.data?.detail ||
+        error?.response?.data?.message ||
         "Failed to save account details. Please try again.";
       toast.error(errorMessage);
     } finally {
       setIsSavingAccount(false);
-    }
-  };
-
-  const handleEditAccount = () => {
-    if (savedAccount) {
-      setAccountForm({
-        accountNumber: savedAccount.account_number || "",
-        accountHolderName: savedAccount.account_holder_name || "",
-        bankName: savedAccount.bank_name || "",
-        routingNumber: savedAccount.routing_number || "",
-        accountType: savedAccount.account_type || "checking"
-      });
-      setShowAccountForm(true);
-      setSavedAccount(null);
     }
   };
 
@@ -184,25 +170,19 @@ export default function Withdraw() {
 
     setIsLoading(true);
     try {
-      const { data } = await apiClient.post("/transactions/withdraw/", {
-        amount: withdrawAmount.toString(),
+      const { data } = await apiClient.post("/api/transaction/withdraw/", {
+        amount: withdrawAmount,
         withdraw_password: withdrawPassword,
-        account_number: savedAccount.account_number,
-        account_holder_name: savedAccount.account_holder_name,
-        bank_name: savedAccount.bank_name,
-        routing_number: savedAccount.routing_number || "",
-        account_type: savedAccount.account_type || "checking",
-        notes: `Withdrawal request of $${withdrawAmount}`,
+        withdrawal_account_id: savedAccount?.id,
+        remark: `Withdrawal to bank account`,
       });
 
       toast.success(data.message || "Withdrawal request submitted successfully");
       setPendingWithdrawals(prev => prev + withdrawAmount);
       setPendingWithdrawCount(prev => prev + 1);
-      setShowSuccess(true);
       setAmount("");
       setWithdrawPassword("");
     } catch (error) {
-      console.error("Withdrawal failed", error);
       const errorMessage =
         error?.response?.data?.error ||
         error?.response?.data?.detail ||
@@ -222,10 +202,8 @@ export default function Withdraw() {
       minimumFractionDigits: 2,
     }).format(value);
 
-  const formattedBalance = formatCurrency(accountBalance);
   const availableBalance = accountBalance - pendingWithdrawals;
   const formattedAvailableBalance = formatCurrency(availableBalance);
-  const formattedAmount = amount ? formatCurrency(Number(amount)) : "$0.00";
   const canWithdraw = 
     amount && 
     Number(amount) > 0 && 
@@ -381,26 +359,16 @@ export default function Withdraw() {
 
               <section className="bg-white/10 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden border border-white/20">
                 <div className="px-6 py-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="h-5 w-5 text-pink-300" />
-                      <p className="text-sm font-semibold text-white">Withdrawal Account</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleEditAccount}
-                      className="flex items-center gap-1 text-xs font-medium text-pink-300 hover:text-pink-200 transition"
-                    >
-                      <Edit2 className="h-3.5 w-3.5" />
-                      Edit
-                    </button>
+                  <div className="flex items-center gap-2 mb-4">
+                    <CreditCard className="h-5 w-5 text-pink-300" />
+                    <p className="text-sm font-semibold text-white">Withdrawal Account</p>
                   </div>
 
                   <div className="bg-white/10 border border-white/20 rounded-2xl px-4 py-3 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-purple-200">Account Number</span>
                       <span className="text-sm font-semibold text-white">
-                        ****{savedAccount?.account_number?.slice(-4) || "****"}
+                        {savedAccount?.masked_account_number || `****${savedAccount?.account_number?.slice(-4) || "****"}`}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
@@ -571,46 +539,6 @@ export default function Withdraw() {
           )}
         </div>
       </div>
-
-      {showSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
-          <div className="w-full max-w-sm bg-white/10 backdrop-blur-md rounded-3xl border border-white/20 p-6 space-y-5 text-center shadow-2xl">
-            <div className="flex flex-col items-center gap-3">
-              <div className="h-16 w-16 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center border border-green-400/30">
-                <Check className="h-8 w-8" />
-              </div>
-              <div className="space-y-1">
-                <h2 className="text-xl font-semibold text-white">Withdrawal Requested</h2>
-                <p className="text-sm text-purple-200">
-                  Your withdrawal request has been submitted successfully. Please wait for admin approval.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                className="w-full border border-white/20 hover:border-pink-300 text-white font-semibold py-3 rounded-full transition bg-white/5 hover:bg-white/10"
-                onClick={() => {
-                  setShowSuccess(false);
-                  setAmount("");
-                  setWithdrawPassword("");
-                }}
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                onClick={openLiveChat}
-                className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-3 rounded-full transition shadow-md shadow-pink-500/30 flex items-center justify-center gap-2"
-              >
-                Chat with Admin
-                <MessageCircle className="h-5 w-5" />
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <Footer />
     </div>
   );
