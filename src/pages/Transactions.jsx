@@ -159,13 +159,11 @@ export default function Transactions() {
       setError(null);
       try {
         const { data } = await apiClient.get("/api/transaction/my-transactions/");
-        console.log("Transactions data:", data);
         setTransactions(data?.transactions || []);
         if (data?.current_balance !== undefined) {
           setCurrentBalance(Number(data.current_balance));
         }
       } catch (err) {
-        console.error("Failed to fetch transactions", err);
         setError("Unable to load transactions at the moment. Please try again shortly.");
         toast.error("Failed to load transactions");
       } finally {
