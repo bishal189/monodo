@@ -9,8 +9,6 @@ const suggestedAmounts = [50, 100, 200, 300, 500, 1000];
 
 export default function Withdraw() {
   const [accountBalance, setAccountBalance] = useState(0);
-  const [pendingWithdrawals, setPendingWithdrawals] = useState(0);
-  const [pendingWithdrawCount, setPendingWithdrawCount] = useState(0);
   const [minimumWithdraw, setMinimumWithdraw] = useState(0);
   const [maximumWithdraw, setMaximumWithdraw] = useState(0);
   const [amount, setAmount] = useState("");
@@ -152,9 +150,8 @@ export default function Withdraw() {
       return;
     }
 
-    const availableBalance = accountBalance - pendingWithdrawals;
-    if (withdrawAmount > availableBalance) {
-      toast.error(`Insufficient balance. Available: ${formatCurrency(availableBalance)}`);
+    if (withdrawAmount > accountBalance) {
+      toast.error(`Insufficient balance. Available: ${formatCurrency(accountBalance)}`);
       return;
     }
 
@@ -178,8 +175,6 @@ export default function Withdraw() {
       });
 
       toast.success(data.message || "Withdrawal request submitted successfully");
-      setPendingWithdrawals(prev => prev + withdrawAmount);
-      setPendingWithdrawCount(prev => prev + 1);
       setAmount("");
       setWithdrawPassword("");
     } catch (error) {
@@ -202,12 +197,11 @@ export default function Withdraw() {
       minimumFractionDigits: 2,
     }).format(value);
 
-  const availableBalance = accountBalance - pendingWithdrawals;
-  const formattedAvailableBalance = formatCurrency(availableBalance);
+  const formattedAvailableBalance = formatCurrency(accountBalance);
   const canWithdraw = 
     amount && 
     Number(amount) > 0 && 
-    Number(amount) <= availableBalance &&
+    Number(amount) <= accountBalance &&
     (!minimumWithdraw || Number(amount) >= minimumWithdraw) &&
     (!maximumWithdraw || Number(amount) <= maximumWithdraw) &&
     withdrawPassword && 
@@ -333,30 +327,6 @@ export default function Withdraw() {
                 <p className="text-sm text-purple-200">Withdraw your earnings quickly and securely.</p>
               </div>
 
-              {/* Account Info Display */}
-              {pendingWithdrawCount > 0 && (
-                <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-100 rounded-2xl p-4 text-sm mb-6">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <p className="font-semibold text-yellow-200 mb-1">
-                        You have {pendingWithdrawCount} pending withdrawal{pendingWithdrawCount > 1 ? "s" : ""}
-                      </p>
-                      <p className="text-yellow-100/80 text-xs">
-                        Your withdrawal request{pendingWithdrawCount > 1 ? "s are" : " is"} awaiting admin approval.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={openLiveChat}
-                      className="flex-shrink-0 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-2 px-4 rounded-full transition shadow-md shadow-pink-500/30 flex items-center justify-center gap-2 text-xs whitespace-nowrap"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      Chat
-                    </button>
-                  </div>
-                </div>
-              )}
-
               <section className="bg-white/10 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden border border-white/20">
                 <div className="px-6 py-5">
                   <div className="flex items-center gap-2 mb-4">
@@ -398,14 +368,7 @@ export default function Withdraw() {
                           <p className="text-2xl font-bold text-white">Loading...</p>
                         </div>
                       ) : (
-                        <>
-                          <p className="text-2xl font-bold text-white">{formattedAvailableBalance}</p>
-                          {pendingWithdrawals > 0 && (
-                            <p className="text-xs text-purple-200 mt-1">
-                              Pending: {formatCurrency(pendingWithdrawals)}
-                            </p>
-                          )}
-                        </>
+                        <p className="text-2xl font-bold text-white">{formattedAvailableBalance}</p>
                       )}
                     </div>
                     <div className="h-12 w-12 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-pink-300">
@@ -437,7 +400,7 @@ export default function Withdraw() {
                           disabled={isLoading}
                         />
                       </div>
-                      {amount && Number(amount) > availableBalance && (
+                      {amount && Number(amount) > accountBalance && (
                         <p className="text-xs text-red-400 mt-1">Amount exceeds available balance</p>
                       )}
                       {minimumWithdraw > 0 && amount && Number(amount) < minimumWithdraw && (
@@ -458,7 +421,7 @@ export default function Withdraw() {
                     <div className="grid grid-cols-3 gap-3 text-sm font-semibold">
                       {suggestedAmounts.map((value) => {
                         const isActive = Number(amount) === value;
-                        const isDisabled = value > availableBalance || (minimumWithdraw > 0 && value < minimumWithdraw) || (maximumWithdraw > 0 && value > maximumWithdraw);
+                        const isDisabled = value > accountBalance || (minimumWithdraw > 0 && value < minimumWithdraw) || (maximumWithdraw > 0 && value > maximumWithdraw);
                         return (
                           <button
                             key={value}
