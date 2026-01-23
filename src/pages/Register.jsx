@@ -432,6 +432,7 @@ export default function Register() {
                   className={`w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border ${
                     errors.invitation_code ? "border-red-400" : "border-white/20"
                   } text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition`}
+                  required
                 />
               </div>
               {errors.invitation_code && (

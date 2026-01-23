@@ -88,7 +88,11 @@ export default function GetStarted() {
 
   const recordsSummary = dashboardData?.records_summary ?? {};
   const commissionRate = dashboardData?.commission_rate ?? 0;
-  const allProducts = dashboardData?.products ?? [];
+  const allProducts = (dashboardData?.products ?? []).sort((a, b) => {
+    const posA = a.position ?? 0;
+    const posB = b.position ?? 0;
+    return posA - posB;
+  });
   const productCount = dashboardData?.product_count ?? 0;
   
   const totalBalance = Number(recordsSummary.total_balance ?? 0);
@@ -209,9 +213,6 @@ export default function GetStarted() {
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-purple-200">Products</p>
-                  <p className="text-base font-semibold text-white mt-1">
-                    Product {currentProductIndex + 1} of {pendingProducts.length}
-                  </p>
                 </div>
               </div>
 
