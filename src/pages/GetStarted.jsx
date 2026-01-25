@@ -209,13 +209,7 @@ export default function GetStarted() {
           </section>
 
           {pendingProducts.length > 0 && (
-            <section className="rounded-3xl bg-white/10 border border-white/15 shadow-inner shadow-black/10 px-5 py-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-purple-200">Products</p>
-                </div>
-              </div>
-
+            <>
               {currentProduct ? (
                 <div className="max-w-md mx-auto">
                   <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-all duration-300">
@@ -235,19 +229,22 @@ export default function GetStarted() {
                         {currentProduct.description && (
                           <p className="text-purple-200 text-sm mb-3">{currentProduct.description}</p>
                         )}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-pink-300 text-xl font-bold">{formatCurrency(currentProduct.price ?? 0)}</p>
+                        <div className="border-t border-dashed border-white/20 pt-3 space-y-2.5 text-sm text-purple-100">
+                          <div className="flex items-center justify-between">
+                            <span>Price</span>
+                            <span className="font-semibold text-white">{formatCurrency(currentProduct.price ?? 0)}</span>
                           </div>
-                          <div className="text-right space-y-1">
-                            <div className="text-sm">
-                              <span className="text-purple-200">Rate: </span>
-                              <span className="text-green-400 font-semibold">{currentProduct.commission_rate ?? 0}%</span>
-                            </div>
-                            <div className="text-sm">
-                              <span className="text-purple-200">Commission: </span>
-                              <span className="text-green-400 font-semibold">{formatCurrency(currentProduct.commission_amount ?? 0)}</span>
-                            </div>
+                          <div className="flex items-center justify-between">
+                            <span>Commission</span>
+                            <span className="font-semibold text-white">{formatCurrency(currentProduct.commission_amount ?? 0)}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Commission Rate</span>
+                            <span className="font-semibold text-green-400">{currentProduct.commission_rate ?? 0}%</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Total Value</span>
+                            <span className="font-semibold text-white">{formatCurrency(Number(currentProduct.price ?? 0) + Number(currentProduct.commission_amount ?? 0))}</span>
                           </div>
                         </div>
                       </div>
@@ -307,7 +304,7 @@ export default function GetStarted() {
                   </p>
                 </div>
               ) : null}
-            </section>
+            </>
           )}
         </div>
       </main>
