@@ -197,7 +197,7 @@ export default function GetStarted() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Total Balance</p>
                 <p className="text-xl font-semibold mt-1">{formatCurrency(recordsSummary.total_balance ?? 0)}</p>
@@ -205,6 +205,10 @@ export default function GetStarted() {
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Level's Commission</p>
                 <p className="text-xl font-semibold mt-1">{commissionRate}%</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
+                <p className="text-xs uppercase tracking-wide text-purple-200">Today's Commission</p>
+                <p className="text-xl font-semibold mt-1">{formatCurrency(recordsSummary.todays_commission ?? 0)}</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Entitlements</p>
