@@ -39,7 +39,6 @@ export default function GetStarted() {
       setError(null);
       try {
         const response = await apiClient.get("/api/product/dashboard/");
-        console.log(response.data,'response data')
         setDashboardData(response?.data ?? {});
       } catch (err) {
         setError("Unable to load dashboard at the moment. Please try again shortly.");
@@ -133,12 +132,18 @@ export default function GetStarted() {
     try {
       const selectedReview = staticReviews.find((r) => r.id === selectedReviewId);
       
-      await apiClient.post("/api/product/review/", {
+      const response = await apiClient.post("/api/product/review/", {
         product_id: productId,
         review_text: selectedReview.text,
       });
 
-      toast.success("Review submitted successfully!");
+      const backendMessage = response?.data?.message || "Review submitted successfully!";
+      
+      if (backendMessage.toLowerCase().includes("insufficient balance")) {
+        toast.error(backendMessage);
+      } else {
+        toast.success(backendMessage);
+      }
       
       setSelectedReviews((prev) => {
         const updated = { ...prev };
@@ -146,21 +151,25 @@ export default function GetStarted() {
         return updated;
       });
 
-      const response = await apiClient.get("/api/product/dashboard/");
-      console.log(response.data,'response data')
-      const updatedProducts = response?.data?.products ?? [];
-      const updatedPending = updatedProducts.filter(product => product.review_status !== "COMPLETED");
+      const dashboardResponse = await apiClient.get("/api/product/dashboard/");
+      const updatedProducts = dashboardResponse?.data?.products ?? [];
       
-      setDashboardData(response?.data ?? {});
+      setDashboardData(dashboardResponse?.data ?? {});
       
-      if (currentProductIndex < updatedPending.length - 1) {
-        setCurrentProductIndex(prev => prev + 1);
-      } else if (updatedPending.length > 0 && currentProductIndex >= updatedPending.length) {
-        setCurrentProductIndex(updatedPending.length - 1);
+      const submittedProduct = updatedProducts.find(p => p.id === productId);
+      const isCompleted = submittedProduct?.review_status === "COMPLETED";
+      
+      if (isCompleted) {
+        const updatedPending = updatedProducts.filter(product => product.review_status !== "COMPLETED");
+        if (currentProductIndex < updatedPending.length - 1) {
+          setCurrentProductIndex(prev => prev + 1);
+        } else if (updatedPending.length > 0 && currentProductIndex >= updatedPending.length) {
+          setCurrentProductIndex(updatedPending.length - 1);
+        }
       }
     } catch (err) {
-      console.error("Failed to submit review", err);
       const errorMessage =
+        err?.response?.data?.message ||
         err?.response?.data?.detail ||
         err?.response?.data?.error ||
         "Unable to submit review. Please try again.";
