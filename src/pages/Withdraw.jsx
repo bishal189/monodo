@@ -1,11 +1,22 @@
 import { useState, useEffect } from "react";
-import { ArrowDownCircle, DollarSign, MessageCircle, Lock, Eye, EyeOff, CreditCard, Loader2 } from "lucide-react";
+import { ArrowDownCircle, DollarSign, Lock, Eye, EyeOff, Loader2, Wallet } from "lucide-react";
 import { toast } from "react-toastify";
 import PrimaryNav from "../components/PrimaryNav";
 import Footer from "./footer";
 import apiClient from "../services/apiClient";
 
 const suggestedAmounts = [50, 100, 200, 300, 500, 1000];
+
+const getCryptoIcon = (network) => {
+  const icons = {
+    TRC20: "https://assets.coingecko.com/coins/images/325/small/Tether.png",
+    BTC: "https://assets.coingecko.com/coins/images/1/small/bitcoin.png",
+    ETH: "https://assets.coingecko.com/coins/images/279/small/ethereum.png",
+    USDT: "https://assets.coingecko.com/coins/images/325/small/Tether.png",
+    USDC: "https://assets.coingecko.com/coins/images/6319/small/USD_Coin_icon.png",
+  };
+  return icons[network] || icons.BTC;
+};
 
 export default function Withdraw() {
   const [accountBalance, setAccountBalance] = useState(0);
@@ -20,26 +31,11 @@ export default function Withdraw() {
   const [isSavingAccount, setIsSavingAccount] = useState(false);
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [accountForm, setAccountForm] = useState({
-    accountNumber: "",
     accountHolderName: "",
-    bankName: "",
-    routingNumber: "",
-    accountType: "checking"
+    cryptoWalletAddress: "",
+    cryptoNetwork: "TRC20",
+    cryptoWallet: ""
   });
-
-  const openLiveChat = () => {
-    if (typeof window !== 'undefined' && window.LiveChatWidget) {
-      try {
-        window.LiveChatWidget.call('maximize');
-      } catch (error) {
-        if (window.LiveChatWidget.onReady) {
-          window.LiveChatWidget.onReady(() => {
-            window.LiveChatWidget.call('maximize');
-          });
-        }
-      }
-    }
-  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -63,11 +59,9 @@ export default function Withdraw() {
             setSavedAccount({
               id: primaryAccount.id,
               account_holder_name: primaryAccount.account_holder_name,
-              bank_name: primaryAccount.bank_name,
-              account_number: primaryAccount.account_number || "",
-              masked_account_number: primaryAccount.masked_account_number,
-              account_type: primaryAccount.account_type,
-              routing_number: primaryAccount.routing_number || "",
+              crypto_wallet_address: primaryAccount.crypto_wallet_address || "",
+              crypto_network: primaryAccount.crypto_network || "",
+              crypto_wallet: primaryAccount.crypto_wallet_name || primaryAccount.crypto_wallet || "",
             });
             setShowAccountForm(false);
           } else {
@@ -98,26 +92,34 @@ export default function Withdraw() {
   };
 
   const handleSaveAccount = async () => {
-    if (!accountForm.accountNumber || !accountForm.accountHolderName || !accountForm.bankName) {
+    if (!accountForm.accountHolderName || !accountForm.cryptoWalletAddress || !accountForm.cryptoNetwork || !accountForm.cryptoWallet) {
       toast.error("Please fill in all required fields");
       return;
     }
 
     setIsSavingAccount(true);
     try {
-      const accountTypeUpper = accountForm.accountType?.toUpperCase() || "CHECKING";
-      
-      const { data } = await apiClient.post("/api/transaction/withdrawal-accounts/", {
+      await apiClient.post("/api/transaction/withdrawal-accounts/", {
         account_holder_name: accountForm.accountHolderName,
-        bank_name: accountForm.bankName,
-        account_number: accountForm.accountNumber,
-        routing_number: accountForm.routingNumber || "",
-        account_type: accountTypeUpper,
+        crypto_wallet_address: accountForm.cryptoWalletAddress,
+        crypto_network: accountForm.cryptoNetwork,
+        crypto_wallet_name: accountForm.cryptoWallet,
         is_primary: true,
       });
 
-      toast.success(data.message || "Account details saved successfully");
-      setSavedAccount(data.bank_account || data);
+      const { data: accountData } = await apiClient.get("/api/transaction/withdrawal-accounts/check/");
+      if (accountData?.has_account && accountData?.primary_account) {
+        const primaryAccount = accountData.primary_account;
+        setSavedAccount({
+          id: primaryAccount.id,
+          account_holder_name: primaryAccount.account_holder_name,
+          crypto_wallet_address: primaryAccount.crypto_wallet_address || "",
+          crypto_network: primaryAccount.crypto_network || "",
+          crypto_wallet: primaryAccount.crypto_wallet_name || primaryAccount.crypto_wallet || "",
+        });
+      }
+      
+      toast.success("Account details saved successfully");
       setShowAccountForm(false);
     } catch (error) {
       const errorMessage =
@@ -145,7 +147,7 @@ export default function Withdraw() {
     }
 
     if (!savedAccount) {
-      toast.error("Please save your bank account details first");
+      toast.error("Please save your crypto wallet details first");
       setShowAccountForm(true);
       return;
     }
@@ -171,7 +173,7 @@ export default function Withdraw() {
         amount: withdrawAmount,
         withdraw_password: withdrawPassword,
         withdrawal_account_id: savedAccount?.id,
-        remark: `Withdrawal to bank account`,
+        remark: `Withdrawal to crypto wallet`,
       });
 
       toast.success(data.message || "Withdrawal request submitted successfully");
@@ -218,15 +220,15 @@ export default function Withdraw() {
               <div className="text-center space-y-1">
                 <h1 className="text-2xl font-semibold">Add Withdrawal Account</h1>
                 <p className="text-sm text-purple-200">
-                  {savedAccount ? "Update your bank account details" : "Add your bank account details to withdraw funds"}
+                  {savedAccount ? "Update your crypto wallet details" : "Add your crypto wallet details to withdraw funds"}
                 </p>
               </div>
 
               <section className="bg-white/10 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden border border-white/20">
                 <div className="px-6 py-5 space-y-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <CreditCard className="h-5 w-5 text-pink-300" />
-                    <p className="text-sm font-semibold text-white">Account Information</p>
+                    <Wallet className="h-5 w-5 text-pink-300" />
+                    <p className="text-sm font-semibold text-white">Crypto Wallet Information</p>
                   </div>
 
                   <div>
@@ -245,59 +247,65 @@ export default function Withdraw() {
 
                   <div>
                     <label className="block text-sm font-medium text-purple-100 mb-2">
-                      Bank Name <span className="text-red-400">*</span>
+                      Crypto Wallet Address <span className="text-red-400">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={accountForm.bankName}
-                      onChange={(e) => handleAccountFormChange("bankName", e.target.value)}
-                      placeholder="Enter bank name"
-                      className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
-                      disabled={isSavingAccount}
-                    />
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <Wallet className="h-5 w-5 text-purple-300" />
+                      </div>
+                      <input
+                        type="text"
+                        value={accountForm.cryptoWalletAddress}
+                        onChange={(e) => handleAccountFormChange("cryptoWalletAddress", e.target.value)}
+                        placeholder="Enter crypto wallet address"
+                        className="w-full pl-10 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
+                        disabled={isSavingAccount}
+                      />
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-purple-100 mb-2">
-                      Account Number <span className="text-red-400">*</span>
+                      Crypto Network <span className="text-red-400">*</span>
                     </label>
-                    <input
-                      type="text"
-                      value={accountForm.accountNumber}
-                      onChange={(e) => handleAccountFormChange("accountNumber", e.target.value)}
-                      placeholder="Enter account number"
-                      className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
-                      disabled={isSavingAccount}
-                    />
+                    <div className="relative">
+                      <select
+                        value={accountForm.cryptoNetwork}
+                        onChange={(e) => handleAccountFormChange("cryptoNetwork", e.target.value)}
+                        className="w-full pl-12 pr-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition appearance-none cursor-pointer"
+                        disabled={isSavingAccount}
+                      >
+                        <option value="TRC20" className="bg-momondo-purple">TRC20</option>
+                        <option value="USDT" className="bg-momondo-purple">USDT</option>
+                        <option value="BTC" className="bg-momondo-purple">BTC</option>
+                        <option value="USDC" className="bg-momondo-purple">USDC</option>
+                        <option value="ETH" className="bg-momondo-purple">ETH</option>
+                      </select>
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <img
+                          src={getCryptoIcon(accountForm.cryptoNetwork)}
+                          alt={accountForm.cryptoNetwork}
+                          className="h-5 w-5 rounded-full"
+                        />
+                      </div>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <ArrowDownCircle className="h-5 w-5 text-purple-300" />
+                      </div>
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-purple-100 mb-2">
-                      Routing Number
+                      Crypto Wallet <span className="text-red-400">*</span>
                     </label>
                     <input
                       type="text"
-                      value={accountForm.routingNumber}
-                      onChange={(e) => handleAccountFormChange("routingNumber", e.target.value)}
-                      placeholder="Enter routing number (optional)"
+                      value={accountForm.cryptoWallet}
+                      onChange={(e) => handleAccountFormChange("cryptoWallet", e.target.value)}
+                      placeholder="Enter crypto wallet"
                       className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-purple-300 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
                       disabled={isSavingAccount}
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-purple-100 mb-2">
-                      Account Type <span className="text-red-400">*</span>
-                    </label>
-                    <select
-                      value={accountForm.accountType}
-                      onChange={(e) => handleAccountFormChange("accountType", e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition"
-                      disabled={isSavingAccount}
-                    >
-                      <option value="checking" className="bg-momondo-purple">Checking</option>
-                      <option value="savings" className="bg-momondo-purple">Savings</option>
-                    </select>
                   </div>
                 </div>
 
@@ -305,7 +313,7 @@ export default function Withdraw() {
                   <button
                     type="button"
                     onClick={handleSaveAccount}
-                    disabled={isSavingAccount || !accountForm.accountNumber || !accountForm.accountHolderName || !accountForm.bankName}
+                    disabled={isSavingAccount || !accountForm.accountHolderName || !accountForm.cryptoWalletAddress || !accountForm.cryptoNetwork || !accountForm.cryptoWallet}
                     className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-3 rounded-2xl transition shadow-lg shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                   >
                     {isSavingAccount ? (
@@ -319,6 +327,54 @@ export default function Withdraw() {
                   </button>
                 </div>
               </section>
+
+              <section className="bg-white/10 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden border border-white/20">
+                <div className="px-6 py-5">
+                  <p className="text-sm font-semibold text-purple-200 mb-4 text-center">Accepted Cryptocurrencies</p>
+                  <div className="flex items-center justify-center gap-3 flex-wrap md:flex-nowrap">
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("TRC20")}
+                        alt="TRC20"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">TRC20</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("USDT")}
+                        alt="USDT"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">USDT</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("BTC")}
+                        alt="BTC"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">BTC</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("USDC")}
+                        alt="USDC"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">USDC</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("ETH")}
+                        alt="ETH"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">ETH</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
             </>
           ) : (
             <>
@@ -330,28 +386,42 @@ export default function Withdraw() {
               <section className="bg-white/10 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden border border-white/20">
                 <div className="px-6 py-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <CreditCard className="h-5 w-5 text-pink-300" />
-                    <p className="text-sm font-semibold text-white">Withdrawal Account</p>
+                    <Wallet className="h-5 w-5 text-pink-300" />
+                    <p className="text-sm font-semibold text-white">Crypto Wallet Account</p>
                   </div>
 
-                  <div className="bg-white/10 border border-white/20 rounded-2xl px-4 py-3 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs text-purple-200">Account Number</span>
-                      <span className="text-sm font-semibold text-white">
-                        {savedAccount?.masked_account_number || `****${savedAccount?.account_number?.slice(-4) || "****"}`}
-                      </span>
-                    </div>
+                  <div className="bg-white/10 border border-white/20 rounded-2xl px-4 py-3 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-purple-200">Account Holder</span>
                       <span className="text-sm font-semibold text-white">{savedAccount?.account_holder_name}</span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-purple-200">Bank Name</span>
-                      <span className="text-sm font-semibold text-white">{savedAccount?.bank_name}</span>
+                      <span className="text-xs text-purple-200 flex items-center gap-1">
+                        <Wallet className="h-3 w-3" />
+                        Crypto Wallet Address
+                      </span>
+                      <span className="text-sm font-semibold text-white break-all text-right">
+                        {savedAccount?.crypto_wallet_address ? 
+                          `${savedAccount.crypto_wallet_address.slice(0, 6)}...${savedAccount.crypto_wallet_address.slice(-4)}` : 
+                          "N/A"}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs text-purple-200">Account Type</span>
-                      <span className="text-sm font-semibold text-white capitalize">{savedAccount?.account_type}</span>
+                      <span className="text-xs text-purple-200 flex items-center gap-1">
+                        {savedAccount?.crypto_network && (
+                          <img
+                            src={getCryptoIcon(savedAccount.crypto_network)}
+                            alt={savedAccount.crypto_network}
+                            className="h-4 w-4 rounded-full"
+                          />
+                        )}
+                        Crypto Network
+                      </span>
+                      <span className="text-sm font-semibold text-white">{savedAccount?.crypto_network || "N/A"}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-purple-200">Crypto Wallet</span>
+                      <span className="text-sm font-semibold text-white">{savedAccount?.crypto_wallet || "N/A"}</span>
                     </div>
                   </div>
                 </div>
@@ -496,6 +566,54 @@ export default function Withdraw() {
                       "Withdraw Now"
                     )}
                   </button>
+                </div>
+              </section>
+
+              <section className="bg-white/10 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden border border-white/20">
+                <div className="px-6 py-5">
+                  <p className="text-sm font-semibold text-purple-200 mb-4 text-center">Accepted Cryptocurrencies</p>
+                  <div className="flex items-center justify-center gap-3 flex-wrap md:flex-nowrap">
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("TRC20")}
+                        alt="TRC20"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">TRC20</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("USDT")}
+                        alt="USDT"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">USDT</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("BTC")}
+                        alt="BTC"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">BTC</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("USDC")}
+                        alt="USDC"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">USDC</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 bg-white/5 rounded-lg px-2.5 py-1.5 border border-white/10 whitespace-nowrap">
+                      <img
+                        src={getCryptoIcon("ETH")}
+                        alt="ETH"
+                        className="h-5 w-5 rounded-full"
+                      />
+                      <span className="text-xs font-medium text-white">ETH</span>
+                    </div>
+                  </div>
                 </div>
               </section>
             </>

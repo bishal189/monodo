@@ -39,7 +39,6 @@ export default function GetStarted() {
       setError(null);
       try {
         const response = await apiClient.get("/api/product/dashboard/");
-        console.log(response.data,'response data')
         setDashboardData(response?.data ?? {});
       } catch (err) {
         setError("Unable to load dashboard at the moment. Please try again shortly.");
@@ -88,7 +87,11 @@ export default function GetStarted() {
 
   const recordsSummary = dashboardData?.records_summary ?? {};
   const commissionRate = dashboardData?.commission_rate ?? 0;
-  const allProducts = dashboardData?.products ?? [];
+  const allProducts = (dashboardData?.products ?? []).sort((a, b) => {
+    const posA = a.position ?? 0;
+    const posB = b.position ?? 0;
+    return posA - posB;
+  });
   const productCount = dashboardData?.product_count ?? 0;
   
   const totalBalance = Number(recordsSummary.total_balance ?? 0);
@@ -129,12 +132,18 @@ export default function GetStarted() {
     try {
       const selectedReview = staticReviews.find((r) => r.id === selectedReviewId);
       
-      await apiClient.post("/api/product/review/", {
+      const response = await apiClient.post("/api/product/review/", {
         product_id: productId,
         review_text: selectedReview.text,
       });
 
-      toast.success("Review submitted successfully!");
+      const backendMessage = response?.data?.message || "Review submitted successfully!";
+      
+      if (backendMessage.toLowerCase().includes("insufficient balance")) {
+        toast.error(backendMessage);
+      } else {
+        toast.success(backendMessage);
+      }
       
       setSelectedReviews((prev) => {
         const updated = { ...prev };
@@ -142,21 +151,25 @@ export default function GetStarted() {
         return updated;
       });
 
-      const response = await apiClient.get("/api/product/dashboard/");
-      console.log(response.data,'response data')
-      const updatedProducts = response?.data?.products ?? [];
-      const updatedPending = updatedProducts.filter(product => product.review_status !== "COMPLETED");
+      const dashboardResponse = await apiClient.get("/api/product/dashboard/");
+      const updatedProducts = dashboardResponse?.data?.products ?? [];
       
-      setDashboardData(response?.data ?? {});
+      setDashboardData(dashboardResponse?.data ?? {});
       
-      if (currentProductIndex < updatedPending.length - 1) {
-        setCurrentProductIndex(prev => prev + 1);
-      } else if (updatedPending.length > 0 && currentProductIndex >= updatedPending.length) {
-        setCurrentProductIndex(updatedPending.length - 1);
+      const submittedProduct = updatedProducts.find(p => p.id === productId);
+      const isCompleted = submittedProduct?.review_status === "COMPLETED";
+      
+      if (isCompleted) {
+        const updatedPending = updatedProducts.filter(product => product.review_status !== "COMPLETED");
+        if (currentProductIndex < updatedPending.length - 1) {
+          setCurrentProductIndex(prev => prev + 1);
+        } else if (updatedPending.length > 0 && currentProductIndex >= updatedPending.length) {
+          setCurrentProductIndex(updatedPending.length - 1);
+        }
       }
     } catch (err) {
-      console.error("Failed to submit review", err);
       const errorMessage =
+        err?.response?.data?.message ||
         err?.response?.data?.detail ||
         err?.response?.data?.error ||
         "Unable to submit review. Please try again.";
@@ -184,7 +197,7 @@ export default function GetStarted() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Total Balance</p>
                 <p className="text-xl font-semibold mt-1">{formatCurrency(recordsSummary.total_balance ?? 0)}</p>
@@ -192,6 +205,10 @@ export default function GetStarted() {
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Level's Commission</p>
                 <p className="text-xl font-semibold mt-1">{commissionRate}%</p>
+              </div>
+              <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
+                <p className="text-xs uppercase tracking-wide text-purple-200">Today's Commission</p>
+                <p className="text-xl font-semibold mt-1">{formatCurrency(recordsSummary.todays_commission ?? 0)}</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Entitlements</p>
@@ -205,16 +222,7 @@ export default function GetStarted() {
           </section>
 
           {pendingProducts.length > 0 && (
-            <section className="rounded-3xl bg-white/10 border border-white/15 shadow-inner shadow-black/10 px-5 py-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <p className="text-xs uppercase tracking-wide text-purple-200">Products</p>
-                  <p className="text-base font-semibold text-white mt-1">
-                    Product {currentProductIndex + 1} of {pendingProducts.length}
-                  </p>
-                </div>
-              </div>
-
+            <>
               {currentProduct ? (
                 <div className="max-w-md mx-auto">
                   <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-all duration-300">
@@ -234,19 +242,22 @@ export default function GetStarted() {
                         {currentProduct.description && (
                           <p className="text-purple-200 text-sm mb-3">{currentProduct.description}</p>
                         )}
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <p className="text-pink-300 text-xl font-bold">{formatCurrency(currentProduct.price ?? 0)}</p>
+                        <div className="border-t border-dashed border-white/20 pt-3 space-y-2.5 text-sm text-purple-100">
+                          <div className="flex items-center justify-between">
+                            <span>Price</span>
+                            <span className="font-semibold text-white">{formatCurrency(currentProduct.price ?? 0)}</span>
                           </div>
-                          <div className="text-right space-y-1">
-                            <div className="text-sm">
-                              <span className="text-purple-200">Rate: </span>
-                              <span className="text-green-400 font-semibold">{currentProduct.commission_rate ?? 0}%</span>
-                            </div>
-                            <div className="text-sm">
-                              <span className="text-purple-200">Commission: </span>
-                              <span className="text-green-400 font-semibold">{formatCurrency(currentProduct.commission_amount ?? 0)}</span>
-                            </div>
+                          <div className="flex items-center justify-between">
+                            <span>Commission</span>
+                            <span className="font-semibold text-white">{formatCurrency(currentProduct.commission_amount ?? 0)}</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Commission Rate</span>
+                            <span className="font-semibold text-green-400">{currentProduct.commission_rate ?? 0}%</span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span>Total Value</span>
+                            <span className="font-semibold text-white">{formatCurrency(Number(currentProduct.price ?? 0) + Number(currentProduct.commission_amount ?? 0))}</span>
                           </div>
                         </div>
                       </div>
@@ -306,7 +317,7 @@ export default function GetStarted() {
                   </p>
                 </div>
               ) : null}
-            </section>
+            </>
           )}
         </div>
       </main>
