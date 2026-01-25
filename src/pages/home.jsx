@@ -70,7 +70,7 @@ export default function Home() {
     Paris: [
       {
         id: 8,
-        image:"https://www.momondo.com/rimg/himg/c3/da/26/leonardo-1070927-7229_sm_05_p_3000x2250_O-230896.jpg?width=836&height=607&crop=true",
+        image:"https://lh3.googleusercontent.com/p/AF1QipNia7JgYUFBJ3CA3aOJPUX-iwEicwy2qK4HtYa-=s1360-w1360-h1020-rw",
         name: "Pullman Paris Tour Eiffel",
         price: "$431 for 2 nights",
         rating: 4.94,
