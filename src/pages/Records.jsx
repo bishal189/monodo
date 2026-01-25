@@ -67,12 +67,14 @@ function RecordCard({ record, selectedReviewId, onReviewChange, onSubmit, isSubm
   return (
     <div className="bg-white/10 border border-white/15 rounded-3xl overflow-hidden shadow-lg shadow-black/20">
       <div className="px-4 pt-4 pb-3 space-y-4">
-        <img
-          src={record.imageUrl}
-          alt={record.title}
-          className="w-full aspect-[7/5] object-cover rounded-2xl"
-          loading="lazy"
-        />
+        {record.imageUrl && (
+          <img
+            src={record.imageUrl}
+            alt={record.title}
+            className="w-full aspect-[7/5] object-cover rounded-2xl"
+            loading="lazy"
+          />
+        )}
         <h3 className="text-base font-semibold text-white">{record.title}</h3>
         <div className="border-t border-dashed border-white/20 pt-3 space-y-2.5 text-sm text-purple-100">
           <div className="flex items-center justify-between">
@@ -145,6 +147,55 @@ function RecordCard({ record, selectedReviewId, onReviewChange, onSubmit, isSubm
   );
 }
 
+const normalizeReviewToRecord = (review) => {
+  const reviewStatus = review.status?.toUpperCase() ?? "PENDING";
+  const statusKey = reviewStatus === "COMPLETED" ? "completed" : "pending";
+  const commission = Number(review.commission_earned ?? 0);
+  const price = Number(review.product_price ?? 0);
+  
+  return {
+    id: review.product,
+    reviewId: review.id,
+    title: review.product_title ?? "N/A",
+    price: price,
+    commission: commission,
+    total_value: price,
+    status: reviewStatus,
+    statusKey,
+    priceDisplay: formatCurrency(price),
+    commissionDisplay: formatCurrency(commission),
+    totalValueDisplay: formatCurrency(price),
+    imageUrl: review.product_image_url || null,
+    timestampDisplay: formatTimestamp(review.created_at),
+  };
+};
+
+const updateUserData = (payload, setCommissionRate, setUserBalance, setRequiredAmount, setUserLevel) => {
+  setCommissionRate(Number(payload.commission_rate ?? 0));
+  setUserBalance(Number(payload.balance ?? 0));
+  setRequiredAmount(Number(payload.required_amount ?? 0));
+  
+  if (payload.level) {
+    setUserLevel({
+      id: payload.level.id,
+      level_name: payload.level.level_name,
+      commission_rate: payload.level.commission_rate,
+      status: payload.level.status,
+      display_name: payload.level.level_name,
+    });
+  }
+};
+
+const getFilterParams = (activeFilter) => {
+  const params = {};
+  if (activeFilter === "pending") {
+    params.review_status = "PENDING";
+  } else if (activeFilter === "completed") {
+    params.review_status = "COMPLETED";
+  }
+  return params;
+};
+
 export default function Records() {
   const [activeFilter, setActiveFilter] = useState("all");
   const [selectedReviews, setSelectedReviews] = useState({});
@@ -162,52 +213,15 @@ export default function Records() {
       setIsLoading(true);
       setError(null);
       try {
-        const params = {};
-        if (activeFilter === "pending") {
-          params.review_status = "PENDING";
-        } else if (activeFilter === "completed") {
-          params.review_status = "COMPLETED";
-        }
-
+        const params = getFilterParams(activeFilter);
         const response = await apiClient.get("/api/product/reviews/", { params });
         const payload = response?.data ?? {};
         
-        setCommissionRate(Number(payload.commission_rate ?? 0));
-        setUserBalance(Number(payload.balance ?? 0));
-        setRequiredAmount(Number(payload.required_amount ?? 0));
-        if (payload.level) {
-          setUserLevel({
-            id: payload.level.id,
-            level_name: payload.level.level_name,
-            commission_rate: payload.level.commission_rate,
-            status: payload.level.status,
-            display_name: payload.level.level_name,
-          });
-        }
+        updateUserData(payload, setCommissionRate, setUserBalance, setRequiredAmount, setUserLevel);
         
-        const normalizedRecords = (payload.products ?? []).map((product) => {
-          const reviewStatus = product.review_status?.toUpperCase() ?? "PENDING";
-          const statusKey = reviewStatus === "COMPLETED" ? "completed" : "pending";
-          const potentialCommission = Number(product.potential_commission ?? 0);
-          
-          return {
-            id: product.id,
-            title: product.title ?? "N/A",
-            price: product.price ?? 0,
-            commission: potentialCommission,
-            total_value: product.price ?? 0,
-            status: reviewStatus,
-            statusKey,
-            priceDisplay: formatCurrency(product.price),
-            commissionDisplay: formatCurrency(potentialCommission),
-            totalValueDisplay: formatCurrency(product.price ?? 0),
-            imageUrl: product.image_url || "",
-            timestampDisplay: formatTimestamp(product.created_at),
-          };
-        });
+        const normalizedRecords = (payload.reviews ?? []).map(normalizeReviewToRecord);
         setRecords(normalizedRecords);
       } catch (err) {
-        console.error("Failed to fetch product reviews", err);
         setError("Unable to load records at the moment. Please try again shortly.");
       } finally {
         setIsLoading(false);
@@ -246,12 +260,18 @@ export default function Records() {
     try {
       const selectedReview = staticReviews.find((r) => r.id === selectedReviewId);
       
-      await apiClient.post("/api/product/review/", {
+      const reviewResponse = await apiClient.post("/api/product/review/", {
         product_id: recordId,
         review_text: selectedReview.text,
       });
 
-      toast.success("Review submitted successfully!");
+      const backendMessage = reviewResponse?.data?.message || "Review submitted successfully!";
+      
+      if (backendMessage.toLowerCase().includes("insufficient balance")) {
+        toast.error(backendMessage);
+      } else {
+        toast.success(backendMessage);
+      }
       
       setSelectedReviews((prev) => {
         const updated = { ...prev };
@@ -259,54 +279,17 @@ export default function Records() {
         return updated;
       });
 
-      // Refresh records
-      const params = {};
-      if (activeFilter === "pending") {
-        params.review_status = "PENDING";
-      } else if (activeFilter === "completed") {
-        params.review_status = "COMPLETED";
-      }
-
+      const params = getFilterParams(activeFilter);
       const response = await apiClient.get("/api/product/reviews/", { params });
       const payload = response?.data ?? {};
       
-      setCommissionRate(Number(payload.commission_rate ?? 0));
-      setUserBalance(Number(payload.balance ?? 0));
-      setRequiredAmount(Number(payload.required_amount ?? 0));
-      if (payload.level) {
-        setUserLevel({
-          id: payload.level.id,
-          level_name: payload.level.level_name,
-          commission_rate: payload.level.commission_rate,
-          status: payload.level.status,
-          display_name: payload.level.level_name,
-        });
-      }
+      updateUserData(payload, setCommissionRate, setUserBalance, setRequiredAmount, setUserLevel);
       
-      const normalizedRecords = (payload.products ?? []).map((product) => {
-        const reviewStatus = product.review_status?.toUpperCase() ?? "PENDING";
-        const statusKey = reviewStatus === "COMPLETED" ? "completed" : "pending";
-        const potentialCommission = Number(product.potential_commission ?? 0);
-        
-        return {
-          id: product.id,
-          title: product.title ?? "N/A",
-          price: product.price ?? 0,
-          commission: potentialCommission,
-          total_value: product.price ?? 0,
-          status: reviewStatus,
-          statusKey,
-          priceDisplay: formatCurrency(product.price),
-          commissionDisplay: formatCurrency(potentialCommission),
-          totalValueDisplay: formatCurrency(product.price ?? 0),
-          imageUrl: product.image_url || "",
-          timestampDisplay: formatTimestamp(product.created_at),
-        };
-      });
+      const normalizedRecords = (payload.reviews ?? []).map(normalizeReviewToRecord);
       setRecords(normalizedRecords);
     } catch (err) {
-      console.error("Failed to submit review", err);
       const errorMessage =
+        err?.response?.data?.message ||
         err?.response?.data?.detail ||
         err?.response?.data?.error ||
         "Unable to submit review. Please try again.";
