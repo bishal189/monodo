@@ -134,6 +134,17 @@ export default function Withdraw() {
   };
 
   const handleWithdraw = async () => {
+    try {
+      const { data } = await apiClient.get("/api/product/level-journey-completed/");
+      if (data?.completed !== true) {
+        toast.error("You should complete full journey to Withdraw");
+        return;
+      }
+    } catch (err) {
+      toast.error("You should complete full journey to Withdraw");
+      return;
+    }
+
     const withdrawAmount = Number(amount);
     
     if (!amount || withdrawAmount <= 0) {
