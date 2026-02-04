@@ -39,6 +39,7 @@ export default function GetStarted() {
       setError(null);
       try {
         const response = await apiClient.get("/api/product/dashboard/");
+        console.log(response?.data,'dashboard data');
         setDashboardData(response?.data ?? {});
       } catch (err) {
         setError("Unable to load dashboard at the moment. Please try again shortly.");
@@ -245,7 +246,7 @@ export default function GetStarted() {
                         <div className="border-t border-dashed border-white/20 pt-3 space-y-2.5 text-sm text-purple-100">
                           <div className="flex items-center justify-between">
                             <span>Price</span>
-                            <span className="font-semibold text-white">{formatCurrency(currentProduct.price ?? 0)}</span>
+                            <span className="font-semibold text-white">{formatCurrency(currentProduct.effective_price ?? currentProduct.price ?? 0)}</span>
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Commission</span>
@@ -257,7 +258,7 @@ export default function GetStarted() {
                           </div>
                           <div className="flex items-center justify-between">
                             <span>Total Value</span>
-                            <span className="font-semibold text-white">{formatCurrency(Number(currentProduct.price ?? 0) + Number(currentProduct.commission_amount ?? 0))}</span>
+                            <span className="font-semibold text-white">{formatCurrency(Number(currentProduct.effective_price ?? currentProduct.price ?? 0) + Number(currentProduct.commission_amount ?? 0))}</span>
                           </div>
                         </div>
                       </div>
