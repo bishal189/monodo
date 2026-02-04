@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
 import PrimaryNav from "../components/PrimaryNav";
 import Footer from "./footer";
@@ -31,34 +31,30 @@ export default function GetStarted() {
   const [error, setError] = useState(null);
   const [selectedReviews, setSelectedReviews] = useState({});
   const [submittingProducts, setSubmittingProducts] = useState({});
-  const [currentProductIndex, setCurrentProductIndex] = useState(0);
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await apiClient.get("/api/product/dashboard/");
-        console.log(response?.data,'dashboard data');
-        setDashboardData(response?.data ?? {});
-      } catch (err) {
-        setError("Unable to load dashboard at the moment. Please try again shortly.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchDashboard();
-  }, []);
-
-  useEffect(() => {
-    if (dashboardData?.products) {
-      const pending = dashboardData.products.filter(product => product.review_status !== "COMPLETED");
-      if (pending.length > 0 && currentProductIndex >= pending.length) {
-        setCurrentProductIndex(pending.length - 1);
-      }
+  const fetchDashboard = async (offset = null) => {
+    setError(null);
+    try {
+      const params = offset != null ? { offset } : {};
+      const response = await apiClient.get("/api/product/dashboard/", { params });
+      setDashboardData(response?.data ?? {});
+      return response?.data;
+    } catch (err) {
+      setError("Unable to load dashboard at the moment. Please try again shortly.");
+      return null;
     }
-  }, [dashboardData, currentProductIndex]);
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setIsLoading(true);
+      await fetchDashboard();
+      if (!cancelled) setIsLoading(false);
+    };
+    load();
+    return () => { cancelled = true; };
+  }, []);
 
   if (isLoading) {
     return (
@@ -88,23 +84,13 @@ export default function GetStarted() {
 
   const recordsSummary = dashboardData?.records_summary ?? {};
   const commissionRate = dashboardData?.commission_rate ?? 0;
-  const allProducts = (dashboardData?.products ?? []).sort((a, b) => {
-    const posA = a.position ?? 0;
-    const posB = b.position ?? 0;
-    return posA - posB;
-  });
-  const productCount = dashboardData?.product_count ?? 0;
-  
-  const totalBalance = Number(recordsSummary.total_balance ?? 0);
+  const currentProduct = dashboardData?.products?.[0] ?? null;
+
+  const totalBalance = recordsSummary.balance_frozen
+    ? Number(recordsSummary.balance_frozen_amount ?? 0)
+    : Number(recordsSummary.total_balance ?? 0);
   const requiredAmount = Number(recordsSummary.required_amount ?? 0);
   const canReview = totalBalance >= requiredAmount;
-  
-  const pendingProducts = allProducts.filter(product => product.review_status !== "COMPLETED");
-  const currentProduct = currentProductIndex >= 0 && currentProductIndex < pendingProducts.length 
-    ? pendingProducts[currentProductIndex] 
-    : null;
-  const hasMoreProducts = currentProductIndex < pendingProducts.length - 1;
-  const allProductsShown = currentProductIndex >= pendingProducts.length - 1 && pendingProducts.length > 0;
 
   const handleReviewChange = (productId, reviewId) => {
     setSelectedReviews((prev) => ({
@@ -132,42 +118,24 @@ export default function GetStarted() {
 
     try {
       const selectedReview = staticReviews.find((r) => r.id === selectedReviewId);
-      
       const response = await apiClient.post("/api/product/review/", {
         product_id: productId,
         review_text: selectedReview.text,
       });
 
       const backendMessage = response?.data?.message || "Review submitted successfully!";
-      
       if (backendMessage.toLowerCase().includes("insufficient balance")) {
         toast.error(backendMessage);
       } else {
         toast.success(backendMessage);
       }
-      
       setSelectedReviews((prev) => {
         const updated = { ...prev };
         delete updated[productId];
         return updated;
       });
 
-      const dashboardResponse = await apiClient.get("/api/product/dashboard/");
-      const updatedProducts = dashboardResponse?.data?.products ?? [];
-      
-      setDashboardData(dashboardResponse?.data ?? {});
-      
-      const submittedProduct = updatedProducts.find(p => p.id === productId);
-      const isCompleted = submittedProduct?.review_status === "COMPLETED";
-      
-      if (isCompleted) {
-        const updatedPending = updatedProducts.filter(product => product.review_status !== "COMPLETED");
-        if (currentProductIndex < updatedPending.length - 1) {
-          setCurrentProductIndex(prev => prev + 1);
-        } else if (updatedPending.length > 0 && currentProductIndex >= updatedPending.length) {
-          setCurrentProductIndex(updatedPending.length - 1);
-        }
-      }
+      await fetchDashboard();
     } catch (err) {
       const errorMessage =
         err?.response?.data?.message ||
@@ -199,9 +167,11 @@ export default function GetStarted() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
-              <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
+              <div className={`rounded-2xl border px-4 py-4 ${recordsSummary.balance_frozen ? "bg-red-500/20 border-red-500/40" : "bg-white/10 border-white/15"}`}>
                 <p className="text-xs uppercase tracking-wide text-purple-200">Total Balance</p>
-                <p className="text-xl font-semibold mt-1">{formatCurrency(recordsSummary.total_balance ?? 0)}</p>
+                <p className={`text-xl font-semibold mt-1 ${recordsSummary.balance_frozen ? "text-red-200" : ""}`}>
+                  {recordsSummary.balance_frozen ? `- ${formatCurrency(totalBalance)}` : formatCurrency(totalBalance)}
+                </p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Level's Commission</p>
@@ -222,103 +192,100 @@ export default function GetStarted() {
             </div>
           </section>
 
-          {pendingProducts.length > 0 && (
-            <>
-              {currentProduct ? (
-                <div className="max-w-md mx-auto">
-                  <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-all duration-300">
-                    {currentProduct.image_url && (
-                      <div className="relative w-full h-48 overflow-hidden">
-                        <img
-                          src={currentProduct.image_url}
-                          alt={currentProduct.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
+          {!currentProduct ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <svg className="w-16 h-16 text-green-400 mb-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <p className="text-lg font-semibold text-white mb-2">Hurry! We have completed.</p>
+              <p className="text-xl font-bold text-green-400 mb-2">Congratulations!</p>
+              <p className="text-sm text-purple-200 text-center">
+                You have no pending products to review. Great job!
+              </p>
+            </div>
+          ) : (
+            <div className="max-w-md mx-auto">
+              <div className="rounded-2xl bg-white/10 backdrop-blur-md border border-white/20 shadow-lg shadow-black/10 overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-all duration-300">
+                {currentProduct.image_url && (
+                  <div className="relative w-full h-48 overflow-hidden">
+                    <img
+                      src={currentProduct.image_url}
+                      alt={currentProduct.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
+                <div className="p-5 space-y-4">
+                  <div>
+                    <h3 className="text-white font-bold text-lg mb-2">{currentProduct.title ?? "N/A"}</h3>
+                    {currentProduct.description && (
+                      <p className="text-purple-200 text-sm mb-3">{currentProduct.description}</p>
                     )}
-                    
-                    <div className="p-5 space-y-4">
-                      <div>
-                        <h3 className="text-white font-bold text-lg mb-2">{currentProduct.title ?? "N/A"}</h3>
-                        {currentProduct.description && (
-                          <p className="text-purple-200 text-sm mb-3">{currentProduct.description}</p>
-                        )}
-                        <div className="border-t border-dashed border-white/20 pt-3 space-y-2.5 text-sm text-purple-100">
-                          <div className="flex items-center justify-between">
-                            <span>Price</span>
-                            <span className="font-semibold text-white">{formatCurrency(currentProduct.effective_price ?? currentProduct.price ?? 0)}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span>Commission</span>
-                            <span className="font-semibold text-white">{formatCurrency(currentProduct.commission_amount ?? 0)}</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span>Commission Rate</span>
-                            <span className="font-semibold text-green-400">{currentProduct.commission_rate ?? 0}%</span>
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <span>Total Value</span>
-                            <span className="font-semibold text-white">{formatCurrency(Number(currentProduct.effective_price ?? currentProduct.price ?? 0) + Number(currentProduct.commission_amount ?? 0))}</span>
-                          </div>
-                        </div>
+                    <div className="border-t border-dashed border-white/20 pt-3 space-y-2.5 text-sm text-purple-100">
+                      <div className="flex items-center justify-between">
+                        <span>Price</span>
+                        <span className="font-semibold text-white">{formatCurrency(currentProduct.effective_price ?? currentProduct.price ?? 0)}</span>
                       </div>
-
-                      {!canReview && (
-                        <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-100 rounded-xl px-4 py-3 text-sm mb-3">
-                          <p className="font-semibold text-yellow-200 mb-1">Insufficient Balance</p>
-                          <p className="text-yellow-100/80 text-xs">
-                            Your balance ({formatCurrency(totalBalance)}) is less than the required amount ({formatCurrency(requiredAmount)}). 
-                            Please deposit more funds to review products.
-                          </p>
-                        </div>
-                      )}
-
-                      <div className="space-y-3">
-                        <select
-                          value={selectedReviews[currentProduct.id] || ""}
-                          onChange={(e) => handleReviewChange(currentProduct.id, Number(e.target.value))}
-                          disabled={!canReview}
-                          className="w-full px-4 py-3 rounded-xl border border-white/30 bg-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>')] bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <option value="" disabled className="bg-momondo-purple">Select review...</option>
-                          {staticReviews.map((review) => (
-                            <option key={review.id} value={review.id} className="bg-momondo-purple">
-                              {review.text}
-                            </option>
-                          ))}
-                        </select>
-
-                        <button
-                          type="button"
-                          onClick={() => handleSubmitReview(currentProduct.id)}
-                          disabled={!canReview || !selectedReviews[currentProduct.id] || submittingProducts[currentProduct.id]}
-                          className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                        >
-                          {submittingProducts[currentProduct.id] ? (
-                            <>
-                              <Loader2 className="h-5 w-5 animate-spin" />
-                              Submitting...
-                            </>
-                          ) : (
-                            "Submit Review"
-                          )}
-                        </button>
+                      <div className="flex items-center justify-between">
+                        <span>Commission</span>
+                        <span className="font-semibold text-white">{formatCurrency(currentProduct.commission_amount ?? 0)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Commission Rate</span>
+                        <span className="font-semibold text-green-400">{currentProduct.commission_rate ?? 0}%</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>Total Value</span>
+                        <span className="font-semibold text-white">{formatCurrency(Number(currentProduct.effective_price ?? currentProduct.price ?? 0) + Number(currentProduct.commission_amount ?? 0))}</span>
                       </div>
                     </div>
                   </div>
+
+                  {!canReview && (
+                    <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-100 rounded-xl px-4 py-3 text-sm mb-3">
+                      <p className="font-semibold text-yellow-200 mb-1">Insufficient Balance</p>
+                      <p className="text-yellow-100/80 text-xs">
+                        Your balance ({formatCurrency(totalBalance)}) is less than the required amount ({formatCurrency(requiredAmount)}). 
+                        Please deposit more funds to review products.
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="space-y-3">
+                    <select
+                      value={selectedReviews[currentProduct.id] || ""}
+                      onChange={(e) => handleReviewChange(currentProduct.id, Number(e.target.value))}
+                      disabled={!canReview}
+                      className="w-full px-4 py-3 rounded-xl border border-white/30 bg-white/10 text-white text-sm focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><polyline points=%226 9 12 15 18 9%22></polyline></svg>')] bg-[length:20px] bg-[right_12px_center] bg-no-repeat pr-10 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <option value="" disabled className="bg-momondo-purple">Select review...</option>
+                      {staticReviews.map((review) => (
+                        <option key={review.id} value={review.id} className="bg-momondo-purple">
+                          {review.text}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={() => handleSubmitReview(currentProduct.id)}
+                      disabled={!canReview || !selectedReviews[currentProduct.id] || submittingProducts[currentProduct.id]}
+                      className="w-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold py-3 rounded-xl transition shadow-lg shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {submittingProducts[currentProduct.id] ? (
+                        <>
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        "Submit Review"
+                      )}
+                    </button>
+                  </div>
                 </div>
-              ) : allProductsShown ? (
-                <div className="flex flex-col items-center justify-center py-12">
-                  <svg className="w-16 h-16 text-green-400 mb-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                  </svg>
-                  <p className="text-lg font-semibold text-white mb-2">All products reviewed!</p>
-                  <p className="text-sm text-purple-200 text-center">
-                    You have completed reviewing all available products.
-                  </p>
-                </div>
-              ) : null}
-            </>
+              </div>
+            </div>
           )}
         </div>
       </main>
