@@ -189,9 +189,11 @@ const updateUserData = (payload, setCommissionRate, setUserBalance, setRequiredA
 const getFilterParams = (activeFilter) => {
   const params = {};
   if (activeFilter === "pending") {
-    params.review_status = "PENDING";
+    params.review_status = "PENDING_FROZEN";
   } else if (activeFilter === "completed") {
     params.review_status = "COMPLETED";
+  } else {
+    params.review_status = "ALL";
   }
   return params;
 };
@@ -215,6 +217,7 @@ export default function Records() {
       try {
         const params = getFilterParams(activeFilter);
         const response = await apiClient.get("/api/product/reviews/", { params });
+        console.log(response?.data);
         const payload = response?.data ?? {};
         
         updateUserData(payload, setCommissionRate, setUserBalance, setRequiredAmount, setUserLevel);
