@@ -172,6 +172,9 @@ export default function GetStarted() {
                 <p className={`text-xl font-semibold mt-1 ${recordsSummary.balance_frozen ? "text-red-200" : ""}`}>
                   {recordsSummary.balance_frozen ? `- ${formatCurrency(totalBalance)}` : formatCurrency(totalBalance)}
                 </p>
+                {recordsSummary.balance_frozen && (
+                  <p className="text-xs text-red-200/90 mt-1">Balance frozen. Please contact support to resolve.</p>
+                )}
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Level's Commission</p>
