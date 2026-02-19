@@ -37,6 +37,7 @@ export default function GetStarted() {
     try {
       const params = offset != null ? { offset } : {};
       const response = await apiClient.get("/api/product/dashboard/", { params });
+      console.log(response.data,'data')
       setDashboardData(response?.data ?? {});
       return response?.data;
     } catch (err) {
@@ -83,14 +84,13 @@ export default function GetStarted() {
   }
 
   const recordsSummary = dashboardData?.records_summary ?? {};
-  const commissionRate = dashboardData?.commission_rate ?? 0;
+  const level = dashboardData?.level ?? {};
+  const levelCommission = level.commission_rate != null ? Number(level.commission_rate) : Number(dashboardData?.commission_rate ?? 0);
   const currentProduct = dashboardData?.products?.[0] ?? null;
 
-  const totalBalance = recordsSummary.balance_frozen
-    ? Number(recordsSummary.balance_frozen_amount ?? 0)
-    : Number(recordsSummary.total_balance ?? 0);
+  const totalBalance = Number(recordsSummary.total_balance ?? 0);
   const requiredAmount = Number(recordsSummary.required_amount ?? 0);
-  const canReview = totalBalance >= requiredAmount;
+  const canReview = totalBalance >= 0;
 
   const handleReviewChange = (productId, reviewId) => {
     setSelectedReviews((prev) => ({
@@ -167,18 +167,18 @@ export default function GetStarted() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-6">
-              <div className={`rounded-2xl border px-4 py-4 ${recordsSummary.balance_frozen ? "bg-red-500/20 border-red-500/40" : "bg-white/10 border-white/15"}`}>
+              <div className={`rounded-2xl border px-4 py-4 ${totalBalance < 0 ? "bg-red-500/20 border-red-500/40" : "bg-white/10 border-white/15"}`}>
                 <p className="text-xs uppercase tracking-wide text-purple-200">Total Balance</p>
-                <p className={`text-xl font-semibold mt-1 ${recordsSummary.balance_frozen ? "text-red-200" : ""}`}>
-                  {recordsSummary.balance_frozen ? `- ${formatCurrency(totalBalance)}` : formatCurrency(totalBalance)}
+                <p className={`text-xl font-semibold mt-1 ${totalBalance < 0 ? "text-red-200" : ""}`}>
+                  {formatCurrency(totalBalance)}
                 </p>
-                {recordsSummary.balance_frozen && (
+                {totalBalance < 0 && (
                   <p className="text-xs text-red-200/90 mt-1">Balance frozen. Please contact support to resolve.</p>
                 )}
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Level's Commission</p>
-                <p className="text-xl font-semibold mt-1">{commissionRate}%</p>
+                <p className="text-xl font-semibold mt-1">{levelCommission}%</p>
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Today's Commission</p>
@@ -245,7 +245,7 @@ export default function GetStarted() {
                     </div>
                   </div>
 
-                  {!canReview && (
+                  {!canReview && totalBalance < 0 && (
                     <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-100 rounded-xl px-4 py-3 text-sm mb-3">
                       <p className="font-semibold text-yellow-200 mb-1">Insufficient Balance</p>
                       <p className="text-yellow-100/80 text-xs">
