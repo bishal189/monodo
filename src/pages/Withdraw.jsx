@@ -36,6 +36,7 @@ export default function Withdraw() {
     cryptoNetwork: "TRC20",
     cryptoWallet: ""
   });
+  const [allowWithdrawal, setAllowWithdrawal] = useState(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -69,6 +70,13 @@ export default function Withdraw() {
           }
         } catch (err) {
           setShowAccountForm(true);
+        }
+
+        try {
+          const { data: allowData } = await apiClient.get("/api/auth/check-allow-withdrawal/");
+          setAllowWithdrawal(allowData?.allow_withdrawal === true);
+        } catch {
+          setAllowWithdrawal(false);
         }
       } catch (error) {
         toast.error("Failed to load account information");
@@ -134,6 +142,10 @@ export default function Withdraw() {
   };
 
   const handleWithdraw = async () => {
+    if (allowWithdrawal !== true) {
+      toast.error("Withdrawals are not allowed at the moment. Please try again later.");
+      return;
+    }
     try {
       const { data } = await apiClient.get("/api/product/level-journey-completed/");
       if (data?.completed !== true) {
@@ -211,15 +223,17 @@ export default function Withdraw() {
     }).format(value);
 
   const formattedAvailableBalance = formatCurrency(accountBalance);
-  const canWithdraw = 
-    amount && 
-    Number(amount) > 0 && 
+  const canWithdraw =
+    allowWithdrawal === true &&
+    amount &&
+    Number(amount) > 0 &&
     Number(amount) <= accountBalance &&
     (!minimumWithdraw || Number(amount) >= minimumWithdraw) &&
     (!maximumWithdraw || Number(amount) <= maximumWithdraw) &&
-    withdrawPassword && 
+    withdrawPassword &&
     savedAccount &&
     !showAccountForm;
+  const withdrawalDisabled = allowWithdrawal === false;
 
   return (
     <div className="min-h-screen bg-momondo-purple text-white">
@@ -438,8 +452,16 @@ export default function Withdraw() {
                 </div>
               </section>
 
-              <section className="bg-white/10 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden border border-white/20">
-                <div className="px-6 py-5 space-y-4">
+              <section className="bg-white/10 backdrop-blur-md rounded-3xl shadow-xl overflow-hidden border border-white/20 relative">
+                {withdrawalDisabled && (
+                  <div className="px-6 py-4 bg-amber-500/20 border-b border-amber-500/30" title="Withdrawals are not allowed at the moment">
+                    <p className="text-sm font-medium text-amber-100 flex items-center gap-2">
+                      <Lock className="h-4 w-4 flex-shrink-0" />
+                      Withdrawals are not allowed at the moment. Please try again later or contact support.
+                    </p>
+                  </div>
+                )}
+                <div className={`px-6 py-5 space-y-4 ${withdrawalDisabled ? "pointer-events-none opacity-60" : ""}`}>
                   <div className="flex items-center justify-between bg-white/10 border border-white/20 rounded-2xl px-4 py-3">
                     <div>
                       <p className="text-sm font-semibold text-purple-200">Available Balance</p>
