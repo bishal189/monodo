@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Wallet, DollarSign, Loader2, FileText } from "lucide-react";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import PrimaryNav from "../components/PrimaryNav";
 import Footer from "./footer";
 import apiClient from "../services/apiClient";

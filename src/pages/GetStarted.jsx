@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import PrimaryNav from "../components/PrimaryNav";
 import Footer from "./footer";
 import apiClient from "../services/apiClient";
@@ -41,7 +41,6 @@ export default function GetStarted() {
     setError(null);
     try {
       const response = await apiClient.get("/api/product/dashboard/");
-      console.log(response?.data);
       setDashboardData(response?.data ?? {});
     } catch {
       setError("Unable to load dashboard. Please try again shortly.");
@@ -87,13 +86,16 @@ export default function GetStarted() {
 
   const totalBalance = Number(dashboardData?.total_balance ?? 0);
   const minimumBalance = Number(dashboardData?.minimum_balance ?? 0);
+  const balanceFrozen = Boolean(dashboardData?.balance_frozen);
+  const balanceFrozenAmount = Number(dashboardData?.balance_frozen_amount ?? 0);
+  const effectiveBalance = balanceFrozen ? balanceFrozenAmount : totalBalance;
   const commissionRate = Number(dashboardData?.commission_rate ?? 0);
   const todaysCommission = Number(dashboardData?.todays_commission ?? 0);
   const entitlements = Number(dashboardData?.entitlements ?? 0);
   const completed = Number(dashboardData?.completed ?? 0);
 
   const handleGenerate = async () => {
-    if (minimumBalance > 0 && totalBalance < minimumBalance) {
+    if (minimumBalance > 0 && effectiveBalance < minimumBalance) {
       setShowInsufficientModal(true);
       return;
     }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Clock, CheckCircle, XCircle, Loader2, ArrowDownCircle, ArrowUpCircle, Filter } from "lucide-react";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import PrimaryNav from "../components/PrimaryNav";
 import Footer from "./footer";
 import apiClient from "../services/apiClient";

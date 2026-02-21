@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowDownCircle, DollarSign, Lock, Eye, EyeOff, Loader2, Wallet } from "lucide-react";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import PrimaryNav from "../components/PrimaryNav";
 import Footer from "./footer";
 import apiClient from "../services/apiClient";

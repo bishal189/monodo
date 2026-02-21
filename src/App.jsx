@@ -12,7 +12,7 @@ import Deposit from "./pages/Deposit";
 import Withdraw from "./pages/Withdraw";
 import Transactions from "./pages/Transactions";
 import Support from "./pages/Support";
-import { ToastContainer } from "react-toastify";
+import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
@@ -106,7 +106,7 @@ export default function App() {
           />
           <Route path="/forgot-password" element={<Forgot_Password />} />
         </Routes>
-        <ToastContainer position="top-right" autoClose={3000} hideProgressBar theme="colored" newestOnTop closeOnClick pauseOnHover />
+        <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       </>
     </Router>
   );

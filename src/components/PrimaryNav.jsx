@@ -13,7 +13,7 @@ import {
   LogOut,
   Receipt
 } from "lucide-react";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import MomondoLogo from "./MomondoLogo";
 import apiClient, { logout, getStoredUser, storeUser } from "../services/apiClient";
 

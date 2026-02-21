@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 import { Lock, Eye, EyeOff } from "lucide-react";
 import MomondoLogo from "../components/MomondoLogo";
 import apiClient, { storeTokens, storeUser } from "../services/apiClient";
