@@ -103,7 +103,7 @@ export default function GetStarted() {
     setCurrentProduct(null);
     setSelectedReviewId(null);
     try {
-      const response = await apiClient.get("/api/product/dashboard-products/");
+      const response = await apiClient.get("/api/product/dashboard-products/?limit=1");
       const products = response?.data?.products ?? [];
       setCurrentProduct(products[0] ?? null);
     } catch {
