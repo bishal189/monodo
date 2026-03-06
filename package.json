@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:tar": "vite build && tar -czvf dist.tar.gz dist",
     "lint": "eslint .",
     "preview": "vite preview"
   },
