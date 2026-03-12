@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import PrimaryNav from "../components/PrimaryNav";
@@ -32,8 +32,10 @@ export default function GetStarted() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentProduct, setCurrentProduct] = useState(null);
+  const [dashboardProductsMeta, setDashboardProductsMeta] = useState(null);
   const [isLoadingProduct, setIsLoadingProduct] = useState(false);
   const [selectedReviewId, setSelectedReviewId] = useState(null);
+  const [searchParams] = useSearchParams();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showInsufficientModal, setShowInsufficientModal] = useState(false);
 
@@ -93,8 +95,9 @@ export default function GetStarted() {
   const todaysCommission = Number(dashboardData?.todays_commission ?? 0);
   const entitlements = Number(dashboardData?.entitlements ?? 0);
   const completed = Number(dashboardData?.completed ?? 0);
+  const displayCompleted = dashboardProductsMeta?.completed_count ?? completed;
 
-  const handleGenerate = async () => {
+  const handleGenerate = async (nextOffset = null, positionParam = null) => {
     if (minimumBalance > 0 && effectiveBalance < minimumBalance) {
       setShowInsufficientModal(true);
       return;
@@ -102,12 +105,34 @@ export default function GetStarted() {
     setIsLoadingProduct(true);
     setCurrentProduct(null);
     setSelectedReviewId(null);
+    setDashboardProductsMeta(null);
     try {
-      const response = await apiClient.get("/api/product/dashboard-products/?limit=1");
-      const products = response?.data?.products ?? [];
+      const stepFromUrl = searchParams.get("step");
+      const offset = nextOffset != null ? nextOffset : 0;
+      const usePositionFromUrl = offset === 0 && positionParam == null && stepFromUrl;
+      const nextStepPosition = offset === 0 && positionParam == null && !stepFromUrl ? completed + 1 : null;
+      const position = positionParam != null
+        ? positionParam
+        : (usePositionFromUrl ? parseInt(stepFromUrl, 10) : nextStepPosition);
+      let url = "/api/product/dashboard-products/?limit=1";
+      if (position != null && !Number.isNaN(position) && position >= 1) {
+        url += `&position=${position}`;
+      } else if (offset > 0) {
+        url += `&offset=${offset}`;
+      }
+      const response = await apiClient.get(url);
+      const data = response?.data ?? {};
+      const products = data.products ?? [];
       setCurrentProduct(products[0] ?? null);
+      setDashboardProductsMeta({
+        total_slots: data.total_slots ?? 0,
+        completed_count: data.completed_count ?? 0,
+        offset: data.offset ?? 0,
+        next_to_do_count: data.next_to_do_count ?? 0,
+      });
     } catch {
       setCurrentProduct(null);
+      setDashboardProductsMeta(null);
     } finally {
       setIsLoadingProduct(false);
     }
@@ -129,6 +154,7 @@ export default function GetStarted() {
       toast.success(msg);
       setCurrentProduct(null);
       setSelectedReviewId(null);
+      setDashboardProductsMeta(null);
       await fetchDashboard();
     } catch (err) {
       const msg =
@@ -178,7 +204,7 @@ export default function GetStarted() {
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Completed</p>
-                <p className="text-xl font-semibold mt-1">{completed}</p>
+                <p className="text-xl font-semibold mt-1">{displayCompleted}</p>
               </div>
             </div>
           </section>
@@ -199,7 +225,7 @@ export default function GetStarted() {
               <p className="text-lg font-semibold text-white mb-4">Ready for the journey?</p>
               <button
                 type="button"
-                onClick={handleGenerate}
+                onClick={() => handleGenerate(0, null)}
                 disabled={isLoadingProduct}
                 className="min-w-[280px] px-16 py-3 bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white font-semibold rounded-xl transition shadow-lg shadow-pink-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
