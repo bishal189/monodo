@@ -202,6 +202,7 @@ export default function Withdraw() {
       toast.success(data.message || "Withdrawal request submitted successfully");
       setAmount("");
       setWithdrawPassword("");
+      setAccountBalance((prev) => Math.max(0, prev - withdrawAmount));
     } catch (error) {
       const errorMessage =
         error?.response?.data?.error ||

@@ -95,7 +95,6 @@ export default function GetStarted() {
   const todaysCommission = Number(dashboardData?.todays_commission ?? 0);
   const entitlements = Number(dashboardData?.entitlements ?? 0);
   const completed = Number(dashboardData?.completed ?? 0);
-  const displayCompleted = dashboardProductsMeta?.completed_count ?? completed;
 
   const handleGenerate = async (nextOffset = null, positionParam = null) => {
     if (minimumBalance > 0 && effectiveBalance < minimumBalance) {
@@ -121,6 +120,7 @@ export default function GetStarted() {
         url += `&offset=${offset}`;
       }
       const response = await apiClient.get(url);
+      console.log(response.data,'response.data');
       const data = response?.data ?? {};
       const products = data.products ?? [];
       setCurrentProduct(products[0] ?? null);
@@ -204,7 +204,7 @@ export default function GetStarted() {
               </div>
               <div className="rounded-2xl bg-white/10 border border-white/15 px-4 py-4">
                 <p className="text-xs uppercase tracking-wide text-purple-200">Completed</p>
-                <p className="text-xl font-semibold mt-1">{displayCompleted}</p>
+                <p className="text-xl font-semibold mt-1">{completed}</p>
               </div>
             </div>
           </section>
