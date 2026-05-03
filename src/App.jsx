@@ -12,6 +12,8 @@ import Deposit from "./pages/Deposit";
 import Withdraw from "./pages/Withdraw";
 import Transactions from "./pages/Transactions";
 import Support from "./pages/Support";
+import ContactUs from "./pages/ContactUs";
+import LiveChatScript from "./components/LiveChatScript";
 import { Toaster } from "react-hot-toast";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -19,6 +21,7 @@ export default function App() {
   return (
     <Router>
       <>
+        <LiveChatScript />
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
@@ -85,6 +88,14 @@ export default function App() {
             element={
               <ProtectedRoute>
                 <Support />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/contact"
+            element={
+              <ProtectedRoute>
+                <ContactUs />
               </ProtectedRoute>
             }
           />

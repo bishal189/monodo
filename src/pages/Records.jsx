@@ -217,8 +217,8 @@ export default function Records() {
       try {
         const params = getFilterParams(activeFilter);
         const response = await apiClient.get("/api/product/reviews/", { params });
-        console.log(response?.data);
         const payload = response?.data ?? {};
+        console.log(payload);
         
         updateUserData(payload, setCommissionRate, setUserBalance, setRequiredAmount, setUserLevel);
         

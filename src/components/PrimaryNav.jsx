@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
-import { 
-  Menu, 
-  X, 
-  FileText, 
-  Wallet, 
+import {
+  Menu,
+  X,
+  FileText,
+  Wallet,
   ArrowDownCircle,
-  Gift, 
-  HelpCircle, 
-  Info, 
+  Gift,
+  HelpCircle,
+  Info,
   Rocket,
   LogOut,
-  Receipt
+  Receipt,
+  Mail,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import MomondoLogo from "./MomondoLogo";
@@ -26,6 +27,7 @@ const navItems = [
   { path: "/faq", label: "FAQ", icon: HelpCircle },
   { path: "/about", label: "About", icon: Info },
   { path: "/get-started", label: "Get Started", icon: Rocket },
+  { path: "/contact", label: "Contact us", icon: Mail },
 ];
 
 export default function PrimaryNav() {
@@ -113,7 +115,7 @@ export default function PrimaryNav() {
               })}
             </nav>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
             <span className="hidden md:flex items-center text-xs sm:text-sm text-white/80 whitespace-nowrap max-w-[180px] lg:max-w-none overflow-hidden">
               Logged in as{" "}
               <span className="ml-1 font-semibold text-white truncate">{username}</span>
