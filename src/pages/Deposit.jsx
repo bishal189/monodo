@@ -22,9 +22,7 @@ export default function Deposit() {
         if (data?.balance !== undefined) {
           setAccountBalance(Number(data.balance) || 0);
         }
-      } catch (error) {
-        console.error("Failed to fetch balance", error);
-      } finally {
+      } catch {} finally {
         setIsFetchingBalance(false);
       }
     };
@@ -61,7 +59,6 @@ export default function Deposit() {
       setRemark("");
       toast.success(`Deposit request of ${formatCurrency(depositAmount)} submitted successfully. Please wait for admin approval.`);
     } catch (error) {
-      console.error("Deposit failed", error);
       const errorMessage =
         error?.response?.data?.error ||
         error?.response?.data?.detail ||

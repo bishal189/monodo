@@ -120,7 +120,6 @@ export default function GetStarted() {
         url += `&offset=${offset}`;
       }
       const response = await apiClient.get(url);
-      console.log(response.data,'response.data');
       const data = response?.data ?? {};
       const products = data.products ?? [];
       setCurrentProduct(products[0] ?? null);

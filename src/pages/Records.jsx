@@ -218,8 +218,7 @@ export default function Records() {
         const params = getFilterParams(activeFilter);
         const response = await apiClient.get("/api/product/reviews/", { params });
         const payload = response?.data ?? {};
-        console.log(payload);
-        
+
         updateUserData(payload, setCommissionRate, setUserBalance, setRequiredAmount, setUserLevel);
         
         const normalizedRecords = (payload.reviews ?? []).map(normalizeReviewToRecord);

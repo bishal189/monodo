@@ -48,9 +48,7 @@ export default function PrimaryNav() {
           setStoredUser(data);
           storeUser(data);
         }
-      } catch (error) {
-        console.error("Failed to refresh profile information", error);
-      }
+      } catch {}
     };
 
     if (!storedUser?.level?.level_name) {

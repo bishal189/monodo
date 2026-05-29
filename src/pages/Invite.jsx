@@ -23,8 +23,7 @@ export default function Invite() {
         if (inviteData) {
           storeUser(inviteData);
         }
-      } catch (err) {
-        console.error("Failed to load invite data", err);
+      } catch {
         setError("Unable to fetch your invitation code. Please try again later.");
         setReferralCode("");
         setProfile(null);
