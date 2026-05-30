@@ -13,7 +13,6 @@ const faqSections = [
       "It is the responsibility of the members to ensure that the payment information provided by customer service is the latest wallet address.",
       "Members should only recharge from accounts held in their name.",
       "Any suspicious or fraudulent recharge will be investigated, and appropriate actions, including reporting to the relevant authorities, will be taken.",
-      "Recharges are non-refundable and cannot be reversed.",
       "In the event of any discrepancy or issue with a recharge, Members must contact our customer support for assistance.",
       "We reserve the right to modify, suspend, or terminate the recharge options or terms and conditions at our discretion.",
     ],
@@ -24,7 +23,7 @@ const faqSections = [
     content: [
       "After completing your personal information and recharging your account, click “Start Tour Now” to begin a reservation.",
       "Patiently wait for the system to book an order, then submit the order once the submission pop up is displayed.",
-      "Complete 36 (Short Tour) submissions per day to perform withdrawal.",
+      "Complete 35 (Short Tour) submissions per day to perform withdrawal.",
     ],
   },
   {
@@ -32,7 +31,7 @@ const faqSections = [
     title: "↘️ 3. Withdrawal",
     content: [
       "Before making a withdrawal, please enter your withdrawal information in the app.",
-      "The withdrawal member must have a credit score of 100% and complete the 36 (Short Tour) submission requirements.",
+      "The withdrawal member must have a credit score of 100% and complete the 35(Short Tour) submission requirements.",
       "During platform working hours, you can withdraw your money through the home page’s “Withdrawal” interface.",
       "Click the “Withdrawal” button after entering the amount you want to withdraw and your withdrawal password.",
       "The specific arrival time is subject to the bank.",
@@ -43,7 +42,7 @@ const faqSections = [
     title: "↘️ 4. Platform agent mode",
     content: [
       "Platform users can become platform agents by recommending new members and receive extra dynamic rewards.",
-      "The reward is 22% of the daily commission for direct inferior users.",
+      "The reward is 30% of the daily commission for direct inferior users.",
     ],
   },
   {
